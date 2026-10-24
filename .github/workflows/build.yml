@@ -174,5 +174,7 @@ jobs:
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$TAG" "$APK" --clobber --repo "$GITHUB_REPOSITORY"
           else
-            gh release create "$TAG" "$APK" --repo "$GITHUB_REPOSITORY" --title "${APP_NAME} $TAG" --notes "APK ${APP_NAME} build nomor ${{ github.run_number }}."
-          fi
+                      TAG="v1.${{ github.run_number }}"
+          APK="android/app/build/outputs/apk/debug/${SLUG}.apk"
+          gh release delete "$TAG" --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" || true
+          gh release create "$TAG" "$APK" --repo "$GITHUB_REPOSITORY" --title "${APP_NAME} $TAG" --notes "APK ${APP_NAME} build nomor ${{ github.run_number }}."

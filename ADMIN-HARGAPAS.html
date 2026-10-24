@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADMIN HARGAPAS - Pembuat Password dan Lisensi</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:#eff6ff;color:#0f172a;font-size:15px;line-height:1.45}
+  .wrap{max-width:540px;margin:0 auto;padding:18px 16px 40px}
+  .brand{font-weight:800;font-size:22px;letter-spacing:1px;color:#1e3a8a}
+  h1{font-size:19px;margin:12px 0 4px} p{margin:0 0 12px;color:#475569}
+  .warn{background:#fef3c7;color:#92400e;border-radius:10px;padding:9px 12px;font-weight:600;font-size:13.5px;margin-bottom:14px}
+  label{display:block;font-size:13px;font-weight:600;color:#475569;margin:10px 0 4px}
+  textarea,input{width:100%;border:1.5px solid #cbd5e1;border-radius:10px;padding:10px 12px;font:inherit;background:#fff;outline:none}
+  textarea{min-height:120px} textarea:focus,input:focus{border-color:#2563eb;box-shadow:0 0 0 3px #dbeafe}
+  .btn{display:block;width:100%;min-height:46px;border-radius:12px;border:1.5px solid #1e3a8a;background:#fff;color:#1e3a8a;font:inherit;font-weight:700;margin-top:10px}
+  .btn.p{background:#1e3a8a;color:#fff}
+  .res{background:#fff;border:1px solid #cbd5e1;border-radius:14px;padding:14px;margin-top:16px}
+  .box{margin-bottom:10px} .box small{display:block;color:#475569;font-weight:600;margin-bottom:3px}
+  .code{font-size:30px;font-weight:800;letter-spacing:.08em;color:#1e3a8a;background:#dbeafe;border-radius:12px;text-align:center;padding:10px 6px}
+  .code.l{color:#92400e;background:#fef3c7}
+  .err{color:#b91c1c;font-weight:600;margin-top:8px}
+  .hist{margin-top:22px} .hist h2{font-size:16px;margin:0 0 6px}
+  .h{border-bottom:1px solid #cbd5e1;padding:7px 0;font-size:13.5px}
+  .h b{color:#1e3a8a}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:999px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}
+  #toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">HARGAPAS &middot; Admin</div>
+  <h1>Pembuat password dan lisensi</h1>
+  <p>Tempel pesan registrasi dari customer, lalu tekan tombol. Data juga bisa diisi atau dikoreksi manual.</p>
+  <div class="warn">File ini berisi kunci rahasia. Simpan hanya di HP atau komputer Anda. Jangan diupload ke GitHub dan jangan dikirim ke customer.</div>
+
+  <label for="msg">Pesan registrasi dari customer</label>
+  <textarea id="msg" placeholder="Tempel pesan WhatsApp registrasi di sini"></textarea>
+  <label for="f-nama">Nama pemilik</label><input id="f-nama">
+  <label for="f-toko">Toko / ID Login</label><input id="f-toko" autocapitalize="none">
+  <label for="f-wa">No. WA customer</label><input id="f-wa" inputmode="tel">
+  <label for="f-kode">Kode perangkat</label><input id="f-kode" placeholder="HP-XXXX-XXXX" autocapitalize="characters">
+  <button class="btn p" id="go">Buat password dan lisensi</button>
+  <div class="err" id="err"></div>
+
+  <div class="res" id="res" hidden>
+    <div class="box"><small>Password (dipakai setiap login)</small><div class="code" id="r-pw"></div></div>
+    <div class="box"><small>No. Lisensi (diisi sekali di HP ini)</small><div class="code l" id="r-lis"></div></div>
+    <button class="btn" id="cp-msg">Salin pesan balasan</button>
+    <button class="btn p" id="send">Kirim lewat WhatsApp</button>
+  </div>
+
+  <div class="hist"><h2>Riwayat</h2><div id="hist"></div>
+    <button class="btn" id="clr" style="display:none">Hapus riwayat</button></div>
+</div>
+<div id="toast"></div>
+<script>
+(function () {
+  'use strict';
+  var SECRET = 'SRh2znLA4jfSr7Cpk71Ed6nwN6AuTc';
+  function ror(x, n) { return (x >>> n) | (x << (32 - n)); }
+  function sha256(str) {
+    var utf8 = unescape(encodeURIComponent(str)), bytes = [], i;
+    for (i = 0; i < utf8.length; i++) bytes.push(utf8.charCodeAt(i));
+    var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+      0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+      0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+      0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+      0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+      0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+      0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+      0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    var bitLen = bytes.length * 8;
+    bytes.push(0x80);
+    while (bytes.length % 64 !== 56) bytes.push(0);
+    var hi = Math.floor(bitLen / 4294967296), lo = bitLen >>> 0;
+    bytes.push((hi >>> 24) & 255, (hi >>> 16) & 255, (hi >>> 8) & 255, hi & 255,
+               (lo >>> 24) & 255, (lo >>> 16) & 255, (lo >>> 8) & 255, lo & 255);
+    for (var off = 0; off < bytes.length; off += 64) {
+      var w = new Array(64);
+      for (i = 0; i < 16; i++) w[i] = (bytes[off + 4*i] << 24) | (bytes[off + 4*i + 1] << 16) | (bytes[off + 4*i + 2] << 8) | bytes[off + 4*i + 3];
+      for (i = 16; i < 64; i++) {
+        var s0 = ror(w[i-15], 7) ^ ror(w[i-15], 18) ^ (w[i-15] >>> 3);
+        var s1 = ror(w[i-2], 17) ^ ror(w[i-2], 19) ^ (w[i-2] >>> 10);
+        w[i] = (w[i-16] + s0 + w[i-7] + s1) | 0;
+      }
+      var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+      for (i = 0; i < 64; i++) {
+        var S1 = ror(e, 6) ^ ror(e, 11) ^ ror(e, 25);
+        var ch = (e & f) ^ (~e & g);
+        var t1 = (h + S1 + ch + K[i] + w[i]) | 0;
+        var S0 = ror(a, 2) ^ ror(a, 13) ^ ror(a, 22);
+        var maj = (a & b) ^ (a & c) ^ (b & c);
+        var t2 = (S0 + maj) | 0;
+        h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+      }
+      H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+      H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+    }
+    var out = [];
+    for (i = 0; i < 8; i++) out.push((H[i] >>> 24) & 255, (H[i] >>> 16) & 255, (H[i] >>> 8) & 255, H[i] & 255);
+    return out;
+  }
+  var ALPH_L = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  function normToko(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+  function normWA(s) {
+    var d = String(s || '').replace(/\D/g, '');
+    if (d.indexOf('62') === 0) d = '0' + d.slice(2); else if (d.charAt(0) === '8') d = '0' + d;
+    return d;
+  }
+  function normCode(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+  function buatKode(label, parts) {
+    var h = sha256(SECRET + '|' + label + '|' + parts.join('|')), s = '';
+    for (var i = 0; i < 8; i++) s += ALPH_L.charAt(h[i] % 32);
+    return s.slice(0, 4) + '-' + s.slice(4);
+  }
+  function kodePassword(toko, wa) { return buatKode('PW', [normToko(toko), normWA(wa)]); }
+  function kodeLisensi(toko, wa, dev) { return buatKode('LIS', [normToko(toko), normWA(wa), normCode(dev)]); }
+
+  var KH = 'hargapas_admin_hist2', cur = null;
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function toast(m) { var t = $('toast'); t.textContent = m; t.classList.add('on'); setTimeout(function () { t.classList.remove('on'); }, 2000); }
+  function copy(text, ok) {
+    function fb() { var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast(ok); } catch (e) { toast('Salin manual ya'); } document.body.removeChild(ta); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast(ok); }, fb); else fb();
+  }
+  function field(text, re) { var m = text.match(re); return m ? m[1].replace(/\*/g, '').trim() : ''; }
+  function parseMsg() {
+    var t = $('msg').value; if (!t.trim()) return;
+    var v;
+    v = field(t, /Nama Pemilik:\*?\s*([^\n\r]+)/i); if (v) $('f-nama').value = v;
+    v = field(t, /Toko\/ID Login:\*?\s*([^\n\r]+)/i); if (v) $('f-toko').value = v;
+    v = field(t, /No\. WA:\*?\s*([^\n\r]+)/i); if (v) $('f-wa').value = v;
+    var m = t.match(/HP[-\s]?([A-HJ-NP-Z2-9]{4})[-\s]?([A-HJ-NP-Z2-9]{4})/i);
+    if (m) $('f-kode').value = 'HP-' + m[1].toUpperCase() + '-' + m[2].toUpperCase();
+  }
+  function reply() {
+    return 'Halo ' + (cur.nama || 'Kak') + ', berikut akses HARGAPAS untuk toko ' + cur.toko + ':\n\n' +
+      'ID Login (Nama Toko): ' + cur.toko + '\n' +
+      'No. WA: ' + cur.wa + '\n' +
+      'Password: ' + cur.pw + '\n' +
+      'No. Lisensi: ' + cur.lis + '\n\n' +
+      'Cara: buka aplikasi HARGAPAS, isi ID Login, No. WA, Password, dan No. Lisensi, lalu tekan Buka Aplikasi. ' +
+      'No. Lisensi hanya diisi sekali di HP ini (kode perangkat ' + cur.kode + '). Mohon tidak dibagikan ke orang lain.';
+  }
+  function hist() { try { return JSON.parse(localStorage.getItem(KH)) || []; } catch (e) { return []; } }
+  function renderHist() {
+    var h = hist();
+    $('hist').innerHTML = h.length ? h.map(function (x) {
+      return '<div class="h"><b>' + esc(x.toko) + '</b> &middot; ' + esc(x.nama || '-') + '<br><small>' + esc(x.kode) + ' &middot; ' + esc(x.tgl) + '</small><br>Password ' + esc(x.pw) + ' &middot; Lisensi ' + esc(x.lis) + '</div>';
+    }).join('') : '<p>Belum ada.</p>';
+    $('clr').style.display = h.length ? 'block' : 'none';
+  }
+  function waLink(n, text) {
+    var d = String(n || '').replace(/\D/g, '');
+    if (d.indexOf('0') === 0) d = '62' + d.slice(1); else if (d.charAt(0) === '8') d = '62' + d;
+    return 'https://wa.me/' + d + '?text=' + encodeURIComponent(text);
+  }
+  $('msg').addEventListener('input', parseMsg);
+  $('go').addEventListener('click', function () {
+    parseMsg();
+    var toko = $('f-toko').value.trim(), wa = $('f-wa').value.trim(), kodeRaw = $('f-kode').value;
+    var m = kodeRaw.match(/HP[-\s]?([A-HJ-NP-Z2-9]{4})[-\s]?([A-HJ-NP-Z2-9]{4})/i), id8 = m ? (m[1] + m[2]).toUpperCase() : normCode(kodeRaw);
+    if (!normToko(toko) || !normWA(wa)) { $('err').textContent = 'Isi Toko/ID Login dan No. WA dulu.'; $('res').hidden = true; return; }
+    if (!/^[A-HJ-NP-Z2-9]{8}$/.test(id8)) { $('err').textContent = 'Kode perangkat tidak valid. Contoh yang benar: HP-ABCD-2345.'; $('res').hidden = true; return; }
+    $('err').textContent = '';
+    cur = { nama: $('f-nama').value.trim(), toko: toko, wa: wa, kode: 'HP-' + id8.slice(0, 4) + '-' + id8.slice(4),
+            pw: kodePassword(toko, wa), lis: kodeLisensi(toko, wa, id8) };
+    $('r-pw').textContent = cur.pw; $('r-lis').textContent = cur.lis; $('res').hidden = false;
+    var h = hist().filter(function (x) { return x.kode !== cur.kode || x.toko !== cur.toko; });
+    h.unshift({ nama: cur.nama, toko: cur.toko, kode: cur.kode, pw: cur.pw, lis: cur.lis, tgl: new Date().toLocaleDateString('id-ID') });
+    try { localStorage.setItem(KH, JSON.stringify(h.slice(0, 50))); } catch (e) {}
+    renderHist();
+  });
+  $('cp-msg').addEventListener('click', function () { copy(reply(), 'Pesan balasan tersalin'); });
+  $('send').addEventListener('click', function () { window.location.href = waLink(cur.wa, reply()); });
+  $('clr').addEventListener('click', function () { try { localStorage.removeItem(KH); } catch (e) {} renderHist(); });
+  renderHist();
+})();
+</script>
+</body>
+</html>

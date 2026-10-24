@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HARGAPAS - HPP-nya Jelas, Labanya Pas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#1e3a8a',
+                            lightblue: '#2563eb',
+                            sky: '#0284c7',
+                            yellow: '#f59e0b',
+                            brightyellow: '#fbbf24',
+                            softblue: '#eff6ff',
+                            softyellow: '#fef3c7'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @media print {
+            body { background: white !important; }
+            .no-print { display: none !important; }
+            .print-shadow { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
+        }
+        select.unit-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 6px center;
+            background-size: 7px 5px;
+            padding-right: 18px !important;
+        }
+        @media print {
+            select.unit-select { background-image: none !important; padding-right: 8px !important; }
+        }
+        input[type=range]::-webkit-slider-thumb {
+            background: #f59e0b;
+        }
+
+        /* ===== LOGIN (di-scope di #loginRoot) ===== */
+        #loginRoot {
+            --primary: #1e3a8a; --primary-dark: #172554; --success: #25D366; --success-dark: #128C7E;
+            --gray-100: #f3f4f6; --gray-300: #d1d5db; --gray-600: #4b5563; --gray-700: #374151; --danger: #ef4444;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gray-100);
+            padding: 20px; display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; box-sizing: border-box;
+        }
+        #loginRoot .container-box { background:#fff; padding:30px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.08); width:100%; max-width:485px; box-sizing:border-box; }
+        #loginRoot .lg-page { display:none; }
+        #loginRoot .lg-page.active { display:block; }
+        #loginRoot .logo-area { text-align:center; margin-bottom:25px; }
+        #loginRoot .logo-area h1 { margin:0; color:var(--primary); font-size:32px; font-weight:800; letter-spacing:1.5px; }
+        #loginRoot .logo-area .slogan { margin:5px 0 0 0; color:#10b981; font-size:15px; font-weight:600; font-style:italic; }
+        #loginRoot .logo-area .sub-title { margin:8px 0 0 0; color:var(--gray-600); font-size:13px; }
+        #loginRoot .form-group { margin-bottom:18px; }
+        #loginRoot label { display:block; margin-bottom:6px; font-weight:600; color:var(--gray-700); font-size:14px; }
+        #loginRoot .input-password-container { position:relative; display:flex; align-items:center; }
+        #loginRoot .input-password-container input { padding-right:45px; }
+        #loginRoot .toggle-password { position:absolute; right:12px; cursor:pointer; font-size:18px; user-select:none; color:var(--gray-600); }
+        #loginRoot input { width:100%; padding:12px; border:1px solid var(--gray-300); border-radius:6px; box-sizing:border-box; font-size:14px; background:#fff; }
+        #loginRoot input:focus { outline:none; border-color:var(--primary); }
+        #loginRoot button { width:100%; padding:14px; color:#fff; border:none; border-radius:6px; font-size:16px; font-weight:bold; cursor:pointer; transition:background .2s; margin-top:5px; }
+        #loginRoot button:disabled { opacity:.6; cursor:not-allowed; }
+        #loginRoot .btn-primary { background-color:var(--primary); }
+        #loginRoot .btn-primary:hover { background-color:var(--primary-dark); }
+        #loginRoot .btn-success { background-color:var(--success); }
+        #loginRoot .btn-success:hover { background-color:var(--success-dark); }
+        #loginRoot .switch-link { text-align:center; margin-top:15px; font-size:14px; color:var(--gray-600); }
+        #loginRoot .switch-link a { color:var(--primary); text-decoration:none; font-weight:bold; }
+    </style>
+</head>
+<body class="bg-blue-50/40 text-slate-800 font-sans antialiased">
+
+<!-- ===== HALAMAN LOGIN (tampil pertama) ===== -->
+<div id="loginRoot">
+<div id="halamanLogin" class="container-box lg-page active">
+    <div class="logo-area">
+        <h1>HARGAPAS</h1>
+        <div class="slogan">"HPP-nya Jelas, Labanya Pas"</div>
+        <div class="sub-title">Silakan masuk menggunakan identitas resmi Anda</div>
+    </div>
+    <form onsubmit="prosesLogin(event)">
+        <div class="form-group">
+            <label for="loginUser">ID Login (Nama Toko)</label>
+            <input type="text" id="loginUser" required placeholder="Masukkan Nama Toko Anda">
+        </div>
+        <div class="form-group">
+            <label for="loginWA">No. WA</label>
+            <input type="tel" id="loginWA" required placeholder="Contoh: 0853xxxxxxxx">
+        </div>
+        <div class="form-group">
+            <label for="loginPass">Password</label>
+            <div class="input-password-container">
+                <input type="password" id="loginPass" required placeholder="Masukkan Password Akun">
+                <span class="toggle-password" onclick="toggleVisibility('loginPass', this)">👁️</span>
+            </div>
+        </div>
+        <div class="form-group" id="groupLisensi" style="display: block;">
+            <label for="loginLisensi">No. Lisensi (Verifikasi Pertama Perangkat)</label>
+            <div class="input-password-container">
+                <input type="password" id="loginLisensi" placeholder="Masukkan Kode Lisensi Anda">
+                <span class="toggle-password" onclick="toggleVisibility('loginLisensi', this)">👁️</span>
+            </div>
+        </div>
+        <div style="font-size:12px;color:#64748b;margin:-6px 0 14px;">Kode perangkat Anda: <b id="loginKode"></b></div>
+        <button type="submit" class="btn-primary" id="btnBukaApp">Buka Aplikasi</button>
+    </form>
+    <div class="switch-link">
+        Belum memiliki akun akses? <a href="#" onclick="pindahHalaman('halamanRegistrasi')">Minta Akses Disini</a>
+    </div>
+</div>
+
+<div id="halamanRegistrasi" class="container-box lg-page">
+    <div class="logo-area">
+        <h1>HARGAPAS</h1>
+        <div class="slogan">"HPP-nya Jelas, Labanya Pas"</div>
+        <div class="sub-title">Kartu Registrasi Pembuatan Akses Baru</div>
+    </div>
+    <form onsubmit="kirimAksesHargaPas(event)">
+        <div class="form-group">
+            <label for="regNama">Nama Lengkap Pemilik</label>
+            <input type="text" id="regNama" required placeholder="Masukkan nama Anda">
+        </div>
+        <div class="form-group">
+            <label for="regUser">Toko / UMKM (Nama ID Login)</label>
+            <input type="text" id="regUser" required placeholder="Contoh: tokobudi (tanpa spasi)">
+        </div>
+        <div class="form-group">
+            <label for="regWA">No. WA Aktif</label>
+            <input type="tel" id="regWA" required placeholder="Contoh: 0853xxxxxxxx">
+        </div>
+        <div class="form-group">
+            <label for="regEmail">Alamat E-mail</label>
+            <input type="email" id="regEmail" required placeholder="nama@email.com">
+        </div>
+        <div style="font-size:12px;color:#64748b;margin:-6px 0 14px;">Kode perangkat: <b id="regKode"></b> (ikut terkirim otomatis ke admin)</div>
+        <button type="submit" class="btn-success">Kirim Data ke WhatsApp Admin</button>
+    </form>
+    <div class="switch-link">
+        Sudah memiliki lisensi? <a href="#" onclick="pindahHalaman('halamanLogin')">Kembali Ke Login</a>
+    </div>
+
+</div>
+</div>
+
+<!-- ===== APLIKASI HARGAPAS (tersembunyi sampai login berhasil) ===== -->
+<div id="appRoot" style="display:none" class="min-h-screen flex-col justify-between">
+    <!-- Header / Navbar dengan Tema Biru-Kuning -->
+    <header class="bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-900 text-white shadow-xl border-b-4 border-yellow-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 bg-yellow-300 text-blue-950 px-3 py-1 rounded-full text-xs font-bold mb-2 shadow-sm">
+                        <i class="fa-solid fa-calculator"></i> Kalkulator HPP dan Laba
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-black tracking-wider text-white flex items-center gap-2">
+                        HARGAPAS
+                    </h1>
+                    <p class="mt-1 text-yellow-200 text-sm font-semibold tracking-wide">
+                        HPP-nya Jelas, Labanya Pas
+                    </p>
+                </div>
+                <div class="flex items-center gap-3 no-print">
+                    <button onclick="cetakHalaman()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition shadow-md flex items-center gap-2 border border-blue-400">
+                        <i class="fa-solid fa-print"></i> Cetak / Ekspor PDF
+                    </button>
+                    <button onclick="resetAllData()" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition border border-white/20">
+                        <i class="fa-solid fa-rotate-right"></i> Reset Form
+                    </button>
+                    <button onclick="openExitModal()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition shadow-md flex items-center gap-2 border border-rose-300">
+                        <i class="fa-solid fa-right-from-bracket"></i> Keluar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
+        
+        <!-- Preset Instan Section -->
+        <div class="mb-8 no-print">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-blue-900 mb-3 flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt text-amber-500"></i> Contoh Otomatis (Klik untuk Muat):
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button onclick="loadPreset('moci')" class="text-left bg-white p-3.5 rounded-xl border border-blue-200 hover:border-yellow-300 hover:shadow-md transition group">
+                    <div class="font-bold text-blue-950 group-hover:text-blue-600 text-sm flex items-center justify-between">
+                        <span>🍡 Moci Cantik (1 Adonan / Batch)</span>
+                        <i class="fa-solid fa-arrow-right text-xs text-slate-400 group-hover:text-blue-600"></i>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Preset adonan moci, tepung ketan, cokelat, mika & stiker</p>
+                </button>
+                <button onclick="loadPreset('sambal')" class="text-left bg-white p-3.5 rounded-xl border border-blue-200 hover:border-yellow-300 hover:shadow-md transition group">
+                    <div class="font-bold text-blue-950 group-hover:text-blue-600 text-sm flex items-center justify-between">
+                        <span>🌶️ Sambal Botol Kemasan (1 Batch)</span>
+                        <i class="fa-solid fa-arrow-right text-xs text-slate-400 group-hover:text-blue-600"></i>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Preset bahan cabe, minyak, botol kaca & segel</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Notification banner container -->
+        <div id="toast" class="hidden mb-6 p-4 rounded-xl text-sm font-medium flex items-center justify-between shadow-sm transition">
+            <span id="toast-message"></span>
+            <button onclick="hideToast()" class="text-slate-500 hover:text-slate-800"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- KOLOM KIRI: INPUT DATA & RINCIAN -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Info Produk & Yield -->
+                <div class="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm">
+                    <h2 class="text-base font-bold text-blue-950 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-blue-600"></i> 1. Informasi Produk & Hasil Adonan
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5" for="prodName">
+                                Nama Produk
+                            </label>
+                            <input type="text" id="prodName" value="Moci Cantik" placeholder="Contoh: Moci Cantik" 
+                                class="w-full px-4 py-2.5 bg-blue-50/50 border border-blue-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5" for="batchYield">
+                                Hasil Jadi per Adonan (Pcs)
+                            </label>
+                            <input type="number" id="batchYield" min="1" value="30" oninput="calculateAll()" 
+                                class="w-full px-4 py-2.5 bg-blue-50/50 border border-blue-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition font-bold text-blue-800">
+                            <span class="text-[11px] text-slate-400 mt-1 block">Jumlah produk jadi dari total bahan di bawah</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rincian Bahan Baku -->
+                <div class="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 class="text-base font-bold text-blue-950 flex items-center gap-2">
+                                <i class="fa-solid fa-basket-shopping text-blue-600"></i> 2. Rincian Bahan Baku
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Biaya bahan dihitung proporsional dari harga paket dan takaran yang benar-benar dipakai.</p>
+                        </div>
+                        <button onclick="addBahanRow()" class="bg-amber-100 hover:bg-amber-200 text-blue-950 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 border border-amber-300">
+                            <i class="fa-solid fa-plus"></i> Tambah Bahan
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]" id="bahan-table">
+                            <thead>
+                                <tr class="border-b border-blue-100 text-[11px] text-blue-900 uppercase bg-blue-50/60">
+                                    <th class="py-2.5 px-3 font-bold w-1/4">Nama Bahan</th>
+                                    <th class="py-2.5 px-3 font-bold text-right">Harga Paket (Rp)</th>
+                                    <th class="py-2.5 px-3 font-bold text-right">Isi/Berat Paket</th>
+                                    <th class="py-2.5 px-3 font-bold">Satuan</th>
+                                    <th class="py-2.5 px-3 font-bold text-right">Dipakai</th>
+                                    <th class="py-2.5 px-3 font-bold text-right">Biaya (Rp)</th>
+                                    <th class="py-2.5 px-3 text-center w-12">#</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm" id="bahan-tbody">
+                                <!-- Javascript populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap justify-start gap-x-2 items-center text-sm font-bold">
+                        <span class="text-slate-600">Total Biaya Bahan Baku / Adonan:</span>
+                        <span id="total-bahan-cost" class="text-blue-800">Rp 0</span>
+                    </div>
+                </div>
+
+                <!-- Rincian Kemasan / Packaging -->
+                <div class="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 class="text-base font-bold text-blue-950 flex items-center gap-2">
+                                <i class="fa-solid fa-box text-blue-600"></i> 3. Rincian Kemasan (Packing)
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Misal: Mika plastik Rp 15.000 isi 50 pcs (pakai 1 pcs per produk).</p>
+                        </div>
+                        <button onclick="addKemasanRow()" class="bg-amber-100 hover:bg-amber-200 text-blue-950 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 border border-amber-300">
+                            <i class="fa-solid fa-plus"></i> Tambah Kemasan
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]" id="kemasan-table">
+                            <thead>
+                                <tr class="border-b border-blue-100 text-[11px] text-blue-900 uppercase bg-blue-50/60">
+                                    <th class="py-2.5 px-3 font-bold w-1/3">Nama Kemasan</th>
+                                    <th class="py-2.5 px-3 font-bold text-right">Harga Paket (Rp)</th>
+                                    <th class="py-2.5 px-3 font-bold text-right">Isi per Paket</th>
+                                    <th class="py-2.5 px-3 font-bold text-right">Dipakai / Produk</th>
+                                    <th class="py-2.5 px-3 font-bold text-right">Biaya/Unit (Rp)</th>
+                                    <th class="py-2.5 px-3 text-center w-12">#</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm" id="kemasan-tbody">
+                                <!-- Javascript populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap justify-start gap-x-2 items-center text-sm font-bold">
+                        <span class="text-slate-600">Total Biaya Kemasan / Unit Produk:</span>
+                        <span id="total-kemasan-cost" class="text-blue-800">Rp 0</span>
+                    </div>
+                </div>
+
+                <!-- Biaya Operasional / Tenaga Kerja per Batch -->
+                <div class="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm">
+                    <h2 class="text-base font-bold text-blue-950 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-blue-600"></i> 4. Biaya Operasional (Per Adonan)
+                    </h2>
+                    <p class="text-xs text-slate-500 mb-4">Masukkan total biaya produksi per batch, termasuk gas, listrik, air, dan tenaga kerja yang ingin dialokasikan.</p>
+                    
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-semibold">Rp</span>
+                        <input type="text" inputmode="numeric" id="opsCost" value="6.000" oninput="formatNominalInput(this); calculateAll()" 
+                            class="w-full pl-11 pr-4 py-3 bg-blue-50/50 border border-blue-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition font-semibold text-slate-900">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- KOLOM KANAN: HASIL & ANALISIS HARGA JUAL -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
+                
+                <!-- Kartu Hasil Utama Biru & Kuning -->
+                <div class="bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950 text-white p-6 sm:p-8 rounded-2xl shadow-xl border-2 border-yellow-300/80 sticky top-6">
+                    <h3 class="text-xs font-bold tracking-widest text-yellow-300 uppercase mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-yellow-300"></i> Ringkasan HPP & Harga Jual
+                    </h3>
+                    
+                    <div class="space-y-4 mb-6">
+                        <!-- HPP Per Unit -->
+                        <div class="bg-white/10 border border-white/10 p-4 rounded-xl backdrop-blur-sm flex justify-between items-center">
+                            <div>
+                                <span class="text-xs text-blue-100 block mb-0.5">HPP per Unit</span>
+                                <span class="text-[11px] text-blue-200/80">Bahan + kemasan + operasional per 1 pcs</span>
+                            </div>
+                            <div class="text-xl sm:text-2xl font-bold text-white text-right" id="res-hpp">Rp 0</div>
+                        </div>
+
+                        <!-- Target Margin Keuntungan -->
+                        <div class="bg-white/10 border border-white/10 p-4 rounded-xl backdrop-blur-sm">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-xs text-blue-100 font-medium" for="marginRange">Target Keuntungan (Margin Laba)</label>
+                                <div class="flex items-center gap-1 bg-yellow-300 text-blue-950 px-2.5 py-1 rounded-lg border border-amber-300">
+                                    <input type="number" id="marginInput" min="0" max="80" value="40" oninput="syncMargin('input')" 
+                                        class="w-12 bg-transparent text-right font-black text-blue-950 text-sm outline-none">
+                                    <span class="text-xs font-black text-blue-950">%</span>
+                                </div>
+                            </div>
+                            <input type="range" id="marginRange" min="0" max="80" value="40" oninput="syncMargin('range')" 
+                                class="w-full h-2 bg-blue-950 rounded-lg appearance-none cursor-pointer accent-yellow-300">
+                        </div>
+
+                        <!-- Keuntungan Bersih per unit -->
+                        <div class="bg-white/10 border border-white/10 p-4 rounded-xl backdrop-blur-sm flex justify-between items-center">
+                            <div>
+                                <span class="text-xs text-blue-100 block mb-0.5">Laba per Unit</span>
+                                <span class="text-[11px] text-blue-200/80">Harga jual dikurangi HPP terhitung</span>
+                            </div>
+                            <div class="text-lg sm:text-xl font-bold text-yellow-300 text-right" id="res-profit">Rp 0</div>
+                        </div>
+                    </div>
+
+                    <!-- Harga Jual Final -->
+                    <div class="bg-yellow-300 text-blue-950 p-5 rounded-xl text-center relative overflow-hidden shadow-lg border-2 border-amber-300">
+                        <span class="text-xs font-black tracking-wider text-blue-900 uppercase block mb-1">Rekomendasi Harga Jual</span>
+                        <div class="text-3xl sm:text-4xl font-black text-blue-950 tracking-tight my-1" id="res-final-price">Rp 0</div>
+                        <p class="text-xs font-semibold text-blue-900 mt-1" id="res-rounding-info">Dibulatkan ke atas ke kelipatan Rp 500</p>
+                    </div>
+
+                    <!-- Breakdown Proporsi Bar -->
+                    <div class="mt-6">
+                        <div class="flex justify-between text-xs font-semibold mb-1 text-blue-100">
+                            <span>Komposisi Harga Jual (HPP + Laba)</span>
+                            <span id="actual-margin-label" class="text-amber-300 font-bold">Margin Aktual: 0%</span>
+                        </div>
+                        <div class="h-3 w-full bg-blue-950 rounded-full overflow-hidden flex shadow-inner border border-white/20">
+                            <div id="bar-hpp" class="bg-slate-400 h-full transition-all duration-300" style="width: 50%" title="Modal HPP"></div>
+                            <div id="bar-profit" class="bg-yellow-300 h-full transition-all duration-300" style="width: 50%" title="Keuntungan"></div>
+                        </div>
+                        <div class="flex justify-between text-[11px] text-blue-200 mt-1.5">
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-400 inline-block"></span> Modal HPP</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-yellow-300 inline-block"></span> Keuntungan</span>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Simpan -->
+                    <div class="mt-6 pt-4 border-t border-white/10 flex gap-3">
+                        <button onclick="saveProduct()" class="w-full bg-yellow-300 hover:bg-yellow-200 text-blue-950 font-extrabold py-3 px-4 rounded-xl text-sm transition shadow-md flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-bookmark"></i> Simpan Produk ke Riwayat
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-300 rounded-2xl p-4 text-sm text-blue-950 shadow-sm">
+                    <div class="font-extrabold flex items-center gap-2"><i class="fa-solid fa-lightbulb text-blue-600"></i> Catatan agar hitungan realistis</div>
+                    <p class="mt-1 text-xs leading-relaxed">HPP mencakup bahan baku, kemasan, dan biaya operasional per batch yang Anda masukkan. Tambahkan biaya tenaga kerja, penyusutan, produk gagal, ongkir subsidi, biaya marketplace, pajak, atau biaya lain ke biaya operasional/perhitungan Anda bila relevan. Laba di sini adalah estimasi berdasarkan biaya yang dicatat, bukan jaminan laba bersih akuntansi.</p>
+                </div>
+
+                <!-- Simulasi Bulanan -->
+                <div class="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-blue-950 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-blue-600"></i> Simulasi Skala Bulanan
+                        </h3>
+                        <span class="text-xs font-bold text-blue-950 bg-amber-300 px-2.5 py-1 rounded-lg" id="monthly-qty-badge">300 pcs/bulan</span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs text-slate-500 mb-2">Estimasi produk terjual dalam 1 bulan:</label>
+                        <input type="range" id="monthlyQtyRange" min="30" max="3000" step="30" value="300" oninput="updateMonthlySimulation()" 
+                            class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                        <div class="bg-blue-50/50 p-3.5 rounded-xl border border-blue-100">
+                            <span class="text-xs text-slate-500 block mb-1">Total Omzet</span>
+                            <div class="text-base sm:text-lg font-bold text-blue-950" id="res-monthly-omzet">Rp 0</div>
+                        </div>
+                        <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-200">
+                            <span class="text-xs text-amber-800 block mb-1">Estimasi Laba</span>
+                            <div class="text-base sm:text-lg font-bold text-amber-900" id="res-monthly-profit">Rp 0</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Daftar Produk Tersimpan -->
+        <div class="mt-10 bg-white p-6 sm:p-8 rounded-2xl border border-blue-100 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                <div>
+                    <h3 class="text-lg font-bold text-blue-950 flex items-center gap-2">
+                        <i class="fa-solid fa-box-archive text-blue-600"></i> Riwayat Produk Tersimpan
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Simpan dan bandingkan perhitungan berbagai varian produk Anda.</p>
+                </div>
+                <button onclick="clearSavedProducts()" class="text-xs text-rose-600 hover:text-rose-700 font-semibold self-start sm:self-auto flex items-center gap-1 bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100 transition">
+                    <i class="fa-solid fa-trash"></i> Bersihkan Riwayat
+                </button>
+            </div>
+
+            <div id="saved-products-container" class="overflow-x-auto">
+                <!-- Javascript populated -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer dengan watermark AH Creativa 2026 -->
+    <footer class="bg-blue-950 text-slate-400 text-xs py-8 mt-12 border-t-4 border-yellow-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-2">
+            <p class="font-bold text-yellow-300 text-sm">HARGAPAS</p>
+            <p class="italic text-yellow-200/90 text-xs">HPP-nya Jelas, Labanya Pas</p>
+            <p class="text-blue-200/70">AH Creativa 2026</p>
+        </div>
+    </footer>
+
+    
+</div>
+
+<!-- Dialog konfirmasi Keluar -->
+<div id="exit-modal" class="no-print fixed inset-0 z-50 items-center justify-center bg-black/50 p-4" style="display:none">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border-t-4 border-yellow-300">
+        <div class="text-4xl mb-3">🚪</div>
+        <p class="text-base font-bold text-blue-950 mb-5">Anda mau keluar dari aplikasi HARGAPAS?</p>
+        <div class="grid grid-cols-2 gap-3">
+            <button onclick="confirmExit(true)" class="bg-rose-500 hover:bg-rose-600 text-white py-2.5 rounded-xl text-sm font-bold transition">Ya</button>
+            <button onclick="confirmExit(false)" class="bg-slate-200 hover:bg-slate-300 text-slate-800 py-2.5 rounded-xl text-sm font-bold transition">Tidak</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+        // ================= OTENTIKASI: lisensi berkunci rahasia =================
+        const K_LIS = "hargapas_lisensi_v2";
+        const HPAuth = (function () {
+            var SECRET = (function () {
+                var a = [118,116,79,26,83,68,103,100,18,77,78,122,88,28,102,86,76,31,24,111,79,19,72,80,102,31,107,94,113,69];
+                var r = '';
+                for (var i = 0; i < a.length; i++) r += String.fromCharCode(a[i] ^ (37 + i % 7));
+                return r;
+            })();
+  function ror(x, n) { return (x >>> n) | (x << (32 - n)); }
+  function sha256(str) {
+    var utf8 = unescape(encodeURIComponent(str)), bytes = [], i;
+    for (i = 0; i < utf8.length; i++) bytes.push(utf8.charCodeAt(i));
+    var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+      0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+      0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+      0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+      0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+      0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+      0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+      0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    var bitLen = bytes.length * 8;
+    bytes.push(0x80);
+    while (bytes.length % 64 !== 56) bytes.push(0);
+    var hi = Math.floor(bitLen / 4294967296), lo = bitLen >>> 0;
+    bytes.push((hi >>> 24) & 255, (hi >>> 16) & 255, (hi >>> 8) & 255, hi & 255,
+               (lo >>> 24) & 255, (lo >>> 16) & 255, (lo >>> 8) & 255, lo & 255);
+    for (var off = 0; off < bytes.length; off += 64) {
+      var w = new Array(64);
+      for (i = 0; i < 16; i++) w[i] = (bytes[off + 4*i] << 24) | (bytes[off + 4*i + 1] << 16) | (bytes[off + 4*i + 2] << 8) | bytes[off + 4*i + 3];
+      for (i = 16; i < 64; i++) {
+        var s0 = ror(w[i-15], 7) ^ ror(w[i-15], 18) ^ (w[i-15] >>> 3);
+        var s1 = ror(w[i-2], 17) ^ ror(w[i-2], 19) ^ (w[i-2] >>> 10);
+        w[i] = (w[i-16] + s0 + w[i-7] + s1) | 0;
+      }
+      var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+      for (i = 0; i < 64; i++) {
+        var S1 = ror(e, 6) ^ ror(e, 11) ^ ror(e, 25);
+        var ch = (e & f) ^ (~e & g);
+        var t1 = (h + S1 + ch + K[i] + w[i]) | 0;
+        var S0 = ror(a, 2) ^ ror(a, 13) ^ ror(a, 22);
+        var maj = (a & b) ^ (a & c) ^ (b & c);
+        var t2 = (S0 + maj) | 0;
+        h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+      }
+      H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+      H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+    }
+    var out = [];
+    for (i = 0; i < 8; i++) out.push((H[i] >>> 24) & 255, (H[i] >>> 16) & 255, (H[i] >>> 8) & 255, H[i] & 255);
+    return out;
+  }
+  var ALPH_L = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  function normToko(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+  function normWA(s) {
+    var d = String(s || '').replace(/\D/g, '');
+    if (d.indexOf('62') === 0) d = '0' + d.slice(2); else if (d.charAt(0) === '8') d = '0' + d;
+    return d;
+  }
+  function normCode(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+  function buatKode(label, parts) {
+    var h = sha256(SECRET + '|' + label + '|' + parts.join('|')), s = '';
+    for (var i = 0; i < 8; i++) s += ALPH_L.charAt(h[i] % 32);
+    return s.slice(0, 4) + '-' + s.slice(4);
+  }
+  function kodePassword(toko, wa) { return buatKode('PW', [normToko(toko), normWA(wa)]); }
+  function kodeLisensi(toko, wa, dev) { return buatKode('LIS', [normToko(toko), normWA(wa), normCode(dev)]); }
+            return { kodePassword: kodePassword, kodeLisensi: kodeLisensi, normToko: normToko, normWA: normWA, normCode: normCode };
+        })();
+
+        function getDeviceId() {
+            var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', id = null;
+            try { id = localStorage.getItem('hargapas_devid'); } catch (e) {}
+            if (!id || !/^[A-Z0-9]{8}$/.test(id)) {
+                var arr = new Uint8Array(8);
+                if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(arr);
+                else for (var j = 0; j < 8; j++) arr[j] = Math.floor(Math.random() * 256);
+                id = '';
+                for (var i = 0; i < 8; i++) id += A.charAt(arr[i] % 32);
+                try { localStorage.setItem('hargapas_devid', id); } catch (e) {}
+            }
+            return id;
+        }
+        function fmtDevice(id) { return 'HP-' + id.slice(0, 4) + '-' + id.slice(4); }
+
+        // ================= LOGIN & KELUAR =================
+        let jumlahPercobaanGagal = 0;
+
+        function toggleVisibility(inputId, element) {
+            const f = document.getElementById(inputId);
+            if (f.type === "password") { f.type = "text"; element.textContent = "🙈"; }
+            else { f.type = "password"; element.textContent = "👁️"; }
+        }
+
+        function pindahHalaman(idHalaman) {
+            document.querySelectorAll('#loginRoot .lg-page').forEach(p => p.classList.remove('active'));
+            document.getElementById(idHalaman).classList.add('active');
+        }
+
+        function tampilkanAplikasi() {
+            document.getElementById('loginRoot').style.display = 'none';
+            const a = document.getElementById('appRoot');
+            a.style.display = 'flex';
+            window.scrollTo(0, 0);
+        }
+
+        function tampilkanLogin() {
+            document.getElementById('appRoot').style.display = 'none';
+            document.getElementById('loginRoot').style.display = 'flex';
+            pindahHalaman('halamanLogin');
+            window.scrollTo(0, 0);
+        }
+
+        function bacaKunci() {
+            try { return JSON.parse(localStorage.getItem(K_LIS)); } catch (e) { return null; }
+        }
+
+        function prosesLogin(event) {
+            event.preventDefault();
+            const idToko = document.getElementById('loginUser').value.trim();
+            const noWA = document.getElementById('loginWA').value.trim();
+            const passwordInput = document.getElementById('loginPass').value;
+            const lisensiInput = document.getElementById('loginLisensi').value.trim();
+
+            const tokoN = HPAuth.normToko(idToko), waN = HPAuth.normWA(noWA);
+            const passOK = HPAuth.normCode(passwordInput) === HPAuth.normCode(HPAuth.kodePassword(idToko, noWA));
+            const kunci = bacaKunci();
+            const sudahTerdaftar = !!kunci && kunci.t === tokoN && kunci.w === waN;
+
+            let loginSukses = false;
+            if (passOK) {
+                if (sudahTerdaftar) {
+                    loginSukses = true;
+                } else if (lisensiInput && HPAuth.normCode(lisensiInput) === HPAuth.normCode(HPAuth.kodeLisensi(idToko, noWA, getDeviceId()))) {
+                    try { localStorage.setItem(K_LIS, JSON.stringify({ t: tokoN, w: waN })); } catch (e) {}
+                    loginSukses = true;
+                }
+            }
+
+            if (loginSukses) {
+                jumlahPercobaanGagal = 0;
+                tampilkanAplikasi();
+            } else {
+                if (!sudahTerdaftar) document.getElementById('groupLisensi').style.display = 'block';
+                jumlahPercobaanGagal++;
+                if (jumlahPercobaanGagal >= 3) {
+                    alert("Kesalahan Login 3 Kali! Sistem diblokir otomatis. Menghubungkan ke WhatsApp Admin.");
+                    document.getElementById('btnBukaApp').disabled = true;
+                    kirimPemberitahuanGagalKeAdmin(idToko, noWA, "Akses Terblokir 3x Salah");
+                } else {
+                    alert(`Kredensial Salah! (Percobaan ${jumlahPercobaanGagal}/3). Silakan periksa kembali nama toko, nomor WA, password, atau nomor lisensi Anda.`);
+                }
+            }
+        }
+
+        function kirimPemberitahuanGagalKeAdmin(toko, wa, alasan) {
+            const nomorAdmin = "6281316145365";
+            const pesanLaporan = `Halo Admin HARGAPAS,\n` +
+                `Terjadi kendala galat login akun sistem.\n\n` +
+                `*Status:* ${alasan}\n` +
+                `• *ID Toko:* ${toko}\n` +
+                `• *No. Input WA:* ${wa}\n` +
+                `• *Kode Perangkat:* ${fmtDevice(getDeviceId())}\n\n` +
+                `Mohon bantuan verifikasi ulang nomor lisensi perangkat.`;
+            window.location.href = `https://api.whatsapp.com/send?phone=${nomorAdmin}&text=${encodeURIComponent(pesanLaporan)}`;
+        }
+
+        function kirimAksesHargaPas(event) {
+            event.preventDefault();
+            const nama = document.getElementById('regNama').value.trim();
+            const username = document.getElementById('regUser').value.trim();
+            const whatsapp = document.getElementById('regWA').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const nomorAdmin = "6281316145365";
+            const teksPesan = `Halo Admin HARGAPAS,\n` +
+                `Saya mengajukan registrasi pendaftaran akses HARGAPAS.\n\n` +
+                `*Data Pendaftar:*\n` +
+                `• *Nama Pemilik:* ${nama}\n` +
+                `• *Toko/ID Login:* ${username}\n` +
+                `• *No. WA:* ${whatsapp}\n` +
+                `• *E-mail:* ${email}\n` +
+                `• *Kode Perangkat:* ${fmtDevice(getDeviceId())}\n\n` +
+                `Mohon diproses untuk pengiriman password dan lisensi. Terima kasih!`;
+            window.location.href = `https://api.whatsapp.com/send?phone=${nomorAdmin}&text=${encodeURIComponent(teksPesan)}`;
+        }
+
+        // Di aplikasi Android (WebView) perintah cetak tidak tersedia
+        function cetakHalaman() {
+            const cap = window.Capacitor;
+            if (cap && cap.isNativePlatform && cap.isNativePlatform()) {
+                alert("Cetak PDF belum tersedia di aplikasi Android. Gunakan tangkapan layar (screenshot) untuk menyimpan hasil hitungan.");
+                return;
+            }
+            window.print();
+        }
+
+        function openExitModal() { document.getElementById('exit-modal').style.display = 'flex'; }
+
+        function confirmExit(ya) {
+            document.getElementById('exit-modal').style.display = 'none';
+            if (!ya) return; // Tidak: kembali ke aplikasi seperti semula
+            // Ya: kembali ke halaman login
+            document.getElementById('loginPass').value = "";
+            const terkunci = !!bacaKunci();
+            document.getElementById('groupLisensi').style.display = terkunci ? 'none' : 'block';
+            document.getElementById('loginLisensi').value = "";
+            tampilkanLogin();
+            // Di aplikasi Android: tutup aplikasi sepenuhnya
+            try {
+                const cap = window.Capacitor;
+                if (cap && cap.isNativePlatform && cap.isNativePlatform() && cap.Plugins && cap.Plugins.App && cap.Plugins.App.exitApp) {
+                    cap.Plugins.App.exitApp();
+                }
+            } catch (e) {}
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('exit-modal').style.display === 'flex') confirmExit(false);
+        });
+
+
+        // Data struktur untuk Bahan Baku & Kemasan
+        let bahanList = [];
+        let kemasanList = [];
+
+        // Preset contoh data
+        const presets = {
+            moci: {
+                name: "Moci Cantik",
+                yield: 30,
+                ops: 6000,
+                margin: 40,
+                bahan: [
+                    { name: "Tepung Ketan", price: 12000, packSize: 500, unit: "gr", used: 250 },
+                    { name: "Gula & Susu", price: 16000, packSize: 1000, unit: "gr", used: 150 },
+                    { name: "Isian Cokelat / Buah", price: 35000, packSize: 500, unit: "gr", used: 300 },
+                    { name: "Tepung Sangrai (Baluran)", price: 8000, packSize: 250, unit: "gr", used: 100 }
+                ],
+                kemasan: [
+                    { name: "Mika Plastik Moci", price: 15000, packSize: 50, used: 1 },
+                    { name: "Stiker Logo Moci Cantik", price: 10000, packSize: 100, used: 1 }
+                ]
+            },
+            sambal: {
+                name: "Sambal Botol Rempah",
+                yield: 12,
+                ops: 15000,
+                margin: 40,
+                bahan: [
+                    { name: "Cabe Rawit & Merah", price: 40000, packSize: 1000, unit: "gr", used: 500 },
+                    { name: "Bawang Merah & Putih", price: 35000, packSize: 1000, unit: "gr", used: 300 },
+                    { name: "Minyak Goreng", price: 18000, packSize: 1000, unit: "ml", used: 500 },
+                    { name: "Terasi & Bumbu", price: 10000, packSize: 100, unit: "gr", used: 50 }
+                ],
+                kemasan: [
+                    { name: "Botol Sambal 150ml", price: 36000, packSize: 12, used: 1 },
+                    { name: "Segel Tutup & Label", price: 10000, packSize: 20, used: 1 }
+                ]
+            }
+        };
+
+        function loadPreset(key) {
+            const data = presets[key];
+            if (!data) return;
+            document.getElementById('prodName').value = data.name;
+            document.getElementById('batchYield').value = data.yield;
+            document.getElementById('opsCost').value = formatNumber(data.ops);
+            document.getElementById('marginRange').value = data.margin;
+            document.getElementById('marginInput').value = data.margin;
+
+            bahanList = JSON.parse(JSON.stringify(data.bahan));
+            kemasanList = JSON.parse(JSON.stringify(data.kemasan));
+
+            renderBahanTable();
+            renderKemasanTable();
+            calculateAll();
+            showToast(`Berhasil memuat preset: ${data.name}`, 'success');
+        }
+
+        // --- BAHAN BAKU FUNCTIONS ---
+        function addBahanRow(item = null) {
+            const defaultItem = item || { name: "", price: 0, packSize: 1, unit: "gr", used: 0 };
+            bahanList.push(defaultItem);
+            renderBahanTable();
+            calculateAll();
+        }
+
+        function removeBahanRow(index) {
+            bahanList.splice(index, 1);
+            renderBahanTable();
+            calculateAll();
+        }
+
+        function updateBahanData(index, field, value) {
+            bahanList[index][field] = field === 'name' || field === 'unit' ? value : Math.max(0, field === 'price' ? parseNominal(value) : parseDecimal(value));
+            calculateAll();
+        }
+
+        function renderBahanTable() {
+            const tbody = document.getElementById('bahan-tbody');
+            if (bahanList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-slate-400 italic">Belum ada bahan baku. Klik tombol "Tambah Bahan".</td></tr>`;
+                return;
+            }
+
+            let html = "";
+            bahanList.forEach((b, idx) => {
+                const hargaPerSatuan = b.packSize > 0 ? (b.price / b.packSize) : 0;
+                const totalBiayaBahan = hargaPerSatuan * b.used;
+
+                html += `
+                    <tr class="hover:bg-blue-50/30 transition">
+                        <td class="py-2.5 px-3">
+                            <input type="text" value="${escapeHTML(b.name)}" placeholder="Nama bahan..." oninput="updateBahanData(${idx}, 'name', this.value)" 
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none">
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <input type="text" inputmode="numeric" min="0" value="${formatNumber(b.price)}" oninput="formatNominalInput(this); updateBahanData(${idx}, 'price', this.value)" 
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-right tabular-nums focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none font-medium">
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <input type="text" inputmode="decimal" value="${formatDecimal(b.packSize)}" oninput="formatDecimalInput(this); updateBahanData(${idx}, 'packSize', this.value)" 
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-right tabular-nums focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none">
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <select onchange="updateBahanData(${idx}, 'unit', this.value)" 
+                                class="unit-select w-full bg-slate-50 border border-slate-200 rounded-lg pl-2 py-1.5 text-xs focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none">
+                                <option value="gr" ${b.unit==='gr'?'selected':''}>gr</option>
+                                <option value="kg" ${b.unit==='kg'?'selected':''}>kg</option>
+                                <option value="ml" ${b.unit==='ml'?'selected':''}>ml</option>
+                                <option value="liter" ${b.unit==='liter'?'selected':''}>liter</option>
+                                <option value="pcs" ${b.unit==='pcs'?'selected':''}>pcs</option>
+                                <option value="sdk" ${b.unit==='sdk'?'selected':''}>sdk</option>
+                            </select>
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <input type="text" inputmode="decimal" value="${formatDecimal(b.used)}" oninput="formatDecimalInput(this); updateBahanData(${idx}, 'used', this.value)" 
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-right tabular-nums focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none font-medium text-blue-700">
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-semibold text-slate-700 text-xs tabular-nums" id="bahan-sub-${idx}">
+                            ${formatRupiah(totalBiayaBahan)}
+                        </td>
+                        <td class="py-2.5 px-3 text-center">
+                            <button onclick="removeBahanRow(${idx})" class="text-rose-400 hover:text-rose-600 p-1 rounded transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // --- KEMASAN FUNCTIONS ---
+        function addKemasanRow(item = null) {
+            const defaultItem = item || { name: "", price: 0, packSize: 1, used: 1 };
+            kemasanList.push(defaultItem);
+            renderKemasanTable();
+            calculateAll();
+        }
+
+        function removeKemasanRow(index) {
+            kemasanList.splice(index, 1);
+            renderKemasanTable();
+            calculateAll();
+        }
+
+        function updateKemasanData(index, field, value) {
+            kemasanList[index][field] = field === 'name' ? value : Math.max(0, field === 'price' ? parseNominal(value) : parseDecimal(value));
+            calculateAll();
+        }
+
+        function renderKemasanTable() {
+            const tbody = document.getElementById('kemasan-tbody');
+            if (kemasanList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400 italic">Belum ada kemasan. Klik tombol "Tambah Kemasan".</td></tr>`;
+                return;
+            }
+
+            let html = "";
+            kemasanList.forEach((k, idx) => {
+                const biayaPerPcs = k.packSize > 0 ? (k.price / k.packSize) * k.used : 0;
+
+                html += `
+                    <tr class="hover:bg-blue-50/30 transition">
+                        <td class="py-2.5 px-3">
+                            <input type="text" value="${escapeHTML(k.name)}" placeholder="Nama kemasan..." oninput="updateKemasanData(${idx}, 'name', this.value)" 
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none">
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <input type="text" inputmode="numeric" min="0" value="${formatNumber(k.price)}" oninput="formatNominalInput(this); updateKemasanData(${idx}, 'price', this.value)" 
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-right tabular-nums focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none font-medium">
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <input type="text" inputmode="decimal" value="${formatDecimal(k.packSize)}" oninput="formatDecimalInput(this); updateKemasanData(${idx}, 'packSize', this.value)" 
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-right tabular-nums focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none">
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <input type="text" inputmode="decimal" value="${formatDecimal(k.used)}" oninput="formatDecimalInput(this); updateKemasanData(${idx}, 'used', this.value)" 
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-right tabular-nums focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none font-medium text-blue-700">
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-semibold text-slate-700 text-xs tabular-nums">
+                            ${formatRupiah(biayaPerPcs)}
+                        </td>
+                        <td class="py-2.5 px-3 text-center">
+                            <button onclick="removeKemasanRow(${idx})" class="text-rose-400 hover:text-rose-600 p-1 rounded transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function syncMargin(source) {
+            const range = document.getElementById('marginRange');
+            const input = document.getElementById('marginInput');
+            if (source === 'range') {
+                input.value = range.value;
+            } else {
+                const safeValue = Math.min(80, Math.max(0, parseFloat(input.value) || 0));
+                input.value = safeValue;
+                range.value = safeValue;
+            }
+            calculateAll();
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]));
+        }
+
+        function formatNumber(number) {
+            const value = Number(number);
+            return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Number.isFinite(value) ? value : 0);
+        }
+
+        // Input nominal menggunakan titik ribuan tanpa mengubah nilai numeriknya.
+        function formatNominalInput(input) {
+            const digits = String(input.value || '').replace(/[^0-9]/g, '');
+            input.value = digits ? formatNumber(Number(digits)) : '';
+        }
+
+        // Angka desimal: titik = ribuan, koma = desimal (contoh 1.250,5)
+        function formatDecimal(number) {
+            const value = Number(number);
+            return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 4 }).format(Number.isFinite(value) ? value : 0);
+        }
+
+        function formatDecimalInput(input) {
+            const raw = String(input.value || '').replace(/[^0-9,]/g, '');
+            const idx = raw.indexOf(',');
+            let intPart = idx >= 0 ? raw.slice(0, idx) : raw;
+            const decPart = idx >= 0 ? raw.slice(idx + 1).replace(/,/g, '') : null;
+            intPart = intPart.replace(/^0+(?=\d)/, '');
+            if (intPart === '' && decPart !== null) intPart = '0';
+            const intFmt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            input.value = intFmt + (decPart !== null ? ',' + decPart : '');
+        }
+
+        function parseDecimal(value) {
+            const clean = String(value ?? '').replace(/\./g, '').replace(',', '.');
+            const n = parseFloat(clean);
+            return Number.isFinite(n) ? n : 0;
+        }
+
+        function parseNominal(value) {
+            const digits = String(value ?? '').replace(/[^0-9]/g, '');
+            return digits ? Number(digits) : 0;
+        }
+
+        function formatRupiah(number) {
+            const value = Number(number);
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number.isFinite(value) ? value : 0);
+        }
+
+        // --- MASTER CALCULATION ENGINE ---
+        function calculateAll() {
+            const yieldRaw = parseFloat(document.getElementById('batchYield').value);
+            const yieldQty = Number.isFinite(yieldRaw) && yieldRaw > 0 ? yieldRaw : 0;
+            const opsRaw = parseNominal(document.getElementById('opsCost').value);
+            const opsCost = Math.max(0, Number.isFinite(opsRaw) ? opsRaw : 0);
+            const marginRaw = parseFloat(document.getElementById('marginInput').value);
+            const margin = Math.min(80, Math.max(0, Number.isFinite(marginRaw) ? marginRaw : 0));
+            document.getElementById('marginInput').value = margin;
+
+            // 1. Hitung Total Bahan Baku per Batch/Adonan
+            let totalBahanCost = 0;
+            bahanList.forEach((b, idx) => {
+                const costPerUnit = b.packSize > 0 ? (b.price / b.packSize) : 0;
+                const subTotal = costPerUnit * b.used;
+                totalBahanCost += subTotal;
+                
+                const subEl = document.getElementById(`bahan-sub-${idx}`);
+                if (subEl) subEl.innerText = formatRupiah(subTotal);
+            });
+            document.getElementById('total-bahan-cost').innerText = formatRupiah(totalBahanCost);
+
+            // 2. Hitung Total Kemasan per Unit Produk
+            let totalKemasanPerUnit = 0;
+            kemasanList.forEach(k => {
+                const costPerPcs = k.packSize > 0 ? (k.price / k.packSize) * k.used : 0;
+                totalKemasanPerUnit += costPerPcs;
+            });
+            document.getElementById('total-kemasan-cost').innerText = formatRupiah(totalKemasanPerUnit);
+
+            // 3. Alokasi Biaya Operasional per Unit
+            const opsPerUnit = yieldQty > 0 ? (opsCost / yieldQty) : 0;
+            const bahanPerUnit = yieldQty > 0 ? (totalBahanCost / yieldQty) : 0;
+
+            // 4. HPP Total per Unit
+            const hppTotalUnit = yieldQty > 0 ? bahanPerUnit + totalKemasanPerUnit + opsPerUnit : 0;
+
+            // 5. Keuntungan & Harga Jual Final
+            // Margin laba bisnis = laba / harga jual, bukan laba / HPP.
+            // Harga jual sebelum pembulatan = HPP / (1 - target margin).
+            const exactSellingPrice = hppTotalUnit > 0 ? hppTotalUnit / (1 - margin / 100) : 0;
+            // Bulatkan KE ATAS agar pembulatan tidak menurunkan margin target.
+            const finalPrice = exactSellingPrice > 0 ? Math.ceil(exactSellingPrice / 500) * 500 : 0;
+            const actualProfit = Math.max(0, finalPrice - hppTotalUnit);
+            const actualMargin = finalPrice > 0 ? (actualProfit / finalPrice) * 100 : 0;
+
+            // Update UI
+            document.getElementById('res-hpp').innerText = formatRupiah(hppTotalUnit);
+            document.getElementById('res-profit').innerText = formatRupiah(actualProfit);
+            document.getElementById('res-final-price').innerText = formatRupiah(finalPrice);
+            document.getElementById('res-rounding-info').innerText = hppTotalUnit > 0 ? `Harga dasar ${formatRupiah(exactSellingPrice)} · dibulatkan ke atas` : 'Isi biaya dan hasil produksi untuk menghitung harga jual';
+
+            // Bar Proporsi
+            const totalForBar = finalPrice > 0 ? finalPrice : 1;
+            const hppPercent = Math.min(100, Math.max(0, (hppTotalUnit / totalForBar) * 100));
+            const profitPercent = Math.min(100, Math.max(0, (actualProfit / totalForBar) * 100));
+            
+            document.getElementById('bar-hpp').style.width = hppPercent + '%';
+            document.getElementById('bar-profit').style.width = profitPercent + '%';
+            document.getElementById('actual-margin-label').innerText = `Margin Aktual: ${actualMargin.toFixed(1)}%`;
+
+            // Global store
+            window.currentHpp = hppTotalUnit;
+            window.currentFinalPrice = finalPrice;
+            window.currentProfitPerUnit = actualProfit;
+            window.currentActualMargin = actualMargin;
+
+            updateMonthlySimulation();
+        }
+
+        function updateMonthlySimulation() {
+            const qty = parseInt(document.getElementById('monthlyQtyRange').value) || 0;
+            document.getElementById('monthly-qty-badge').innerText = `${qty} pcs/bulan`;
+
+            const finalPrice = window.currentFinalPrice || 0;
+            const profitPerUnit = window.currentProfitPerUnit || 0;
+
+            const omzet = finalPrice * qty;
+            const monthlyProfit = profitPerUnit * qty;
+
+            document.getElementById('res-monthly-omzet').innerText = formatRupiah(omzet);
+            document.getElementById('res-monthly-profit').innerText = formatRupiah(monthlyProfit);
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toast-message');
+            msg.innerText = message;
+            toast.className = `mb-6 p-4 rounded-xl text-sm font-medium flex items-center justify-between shadow-sm transition ${
+                type === 'success' ? 'bg-amber-100 text-blue-950 border border-amber-300' : 'bg-rose-50 text-rose-800 border border-rose-200'
+            }`;
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 4000);
+        }
+
+        function hideToast() {
+            document.getElementById('toast').classList.add('hidden');
+        }
+
+        function resetAllData() {
+            document.getElementById('prodName').value = "";
+            document.getElementById('batchYield').value = 30;
+            document.getElementById('opsCost').value = '0';
+            document.getElementById('marginRange').value = 40;
+            document.getElementById('marginInput').value = 40;
+            bahanList = [];
+            kemasanList = [];
+            renderBahanTable();
+            renderKemasanTable();
+            calculateAll();
+            showToast('Form berhasil di-reset.', 'success');
+        }
+
+        // --- LOCALSTORAGE MANAGEMENT ---
+        function getSavedProducts() {
+            try {
+                return JSON.parse(localStorage.getItem('hargapas_products')) || [];
+            } catch (e) { return []; }
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('prodName').value.trim() || 'Produk Tanpa Nama';
+            const hpp = window.currentHpp || 0;
+            const finalPrice = window.currentFinalPrice || 0;
+            const profit = window.currentProfitPerUnit || 0;
+            const marginRaw = parseFloat(document.getElementById('marginInput').value);
+            const margin = Math.min(80, Math.max(0, Number.isFinite(marginRaw) ? marginRaw : 0));
+            document.getElementById('marginInput').value = margin;
+
+            if (hpp === 0 && finalPrice === 0) {
+                showToast('Mohon isi rincian bahan baku terlebih dahulu!', 'error');
+                return;
+            }
+
+            const newProd = {
+                id: Date.now(),
+                name,
+                hpp,
+                finalPrice,
+                profit,
+                margin,
+                date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+            };
+
+            const products = getSavedProducts();
+            products.unshift(newProd);
+            localStorage.setItem('hargapas_products', JSON.stringify(products));
+
+            renderSavedProducts();
+            showToast(`Produk "${name}" berhasil disimpan ke riwayat!`, 'success');
+        }
+
+        function deleteProduct(id) {
+            let products = getSavedProducts();
+            products = products.filter(p => p.id !== id);
+            localStorage.setItem('hargapas_products', JSON.stringify(products));
+            renderSavedProducts();
+            showToast('Produk berhasil dihapus dari riwayat.', 'success');
+        }
+
+        function clearSavedProducts() {
+            localStorage.removeItem('hargapas_products');
+            renderSavedProducts();
+            showToast('Semua riwayat produk berhasil dibersihkan.', 'success');
+        }
+
+        function renderSavedProducts() {
+            const container = document.getElementById('saved-products-container');
+            const products = getSavedProducts();
+
+            if (products.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 text-sm italic">
+                        Belum ada produk tersimpan. Hitung produk Anda lalu klik "Simpan Produk ke Riwayat".
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-blue-100 text-xs text-blue-900 uppercase bg-blue-50/60">
+                            <th class="py-3 px-4 font-bold">Nama Produk</th>
+                            <th class="py-3 px-4 font-bold">HPP / Unit</th>
+                            <th class="py-3 px-4 font-bold">Margin</th>
+                            <th class="py-3 px-4 font-bold">Harga Jual Final</th>
+                            <th class="py-3 px-4 font-bold">Profit / Unit</th>
+                            <th class="py-3 px-4 font-bold text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm">
+            `;
+
+            products.forEach(p => {
+                html += `
+                    <tr class="hover:bg-blue-50/30 transition">
+                        <td class="py-3 px-4 font-bold text-blue-950">${escapeHTML(p.name)} <span class="block text-[11px] text-slate-400 font-normal">${p.date}</span></td>
+                        <td class="py-3 px-4 text-slate-600">${formatRupiah(p.hpp)}</td>
+                        <td class="py-3 px-4 text-blue-800 font-bold">${p.margin}%</td>
+                        <td class="py-3 px-4 font-black text-blue-950">${formatRupiah(p.finalPrice)}</td>
+                        <td class="py-3 px-4 text-amber-700 font-bold">${formatRupiah(p.profit)}</td>
+                        <td class="py-3 px-4 text-center">
+                            <button onclick="deleteProduct(${p.id})" class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 transition" title="Hapus">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+            container.innerHTML = html;
+        }
+
+        // On window load
+        window.onload = function() {
+            if (bacaKunci()) {
+                document.getElementById("groupLisensi").style.display = "none";
+            }
+            document.getElementById("loginKode").textContent = fmtDevice(getDeviceId());
+            document.getElementById("regKode").textContent = fmtDevice(getDeviceId());
+            loadPreset('moci');
+            renderSavedProducts();
+        };
+    </script>
+</body>
+</html>

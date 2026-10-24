@@ -155,7 +155,7 @@ jobs:
             echo "debug.keystore tidak ada; hapus aplikasi lama sebelum instal versi baru"
           fi
 
-      - name: Bangun APK
+     - name: Bangun APK
         run: |
           cd android
           chmod +x gradlew
@@ -168,18 +168,14 @@ jobs:
           name: ${{ env.SLUG }}-apk
           path: android/app/build/outputs/apk/debug/${{ env.SLUG }}.apk
 
-        - name: Buat Release (APK bisa diunduh dari halaman Releases)
+      - name: Buat Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="v1.${{ github.run_number }}"
           APK="android/app/build/outputs/apk/debug/${SLUG}.apk"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Release $TAG sudah ada, APK ditimpa."
             gh release upload "$TAG" "$APK" --clobber --repo "$GITHUB_REPOSITORY"
           else
-            gh release create "$TAG" "$APK" \
-              --repo "$GITHUB_REPOSITORY" \
-              --title "${APP_NAME} $TAG" \
-              --notes "APK ${APP_NAME} hasil build otomatis nomor ${{ github.run_number }}."
+            gh release create "$TAG" "$APK" --repo "$GITHUB_REPOSITORY" --title "${APP_NAME} $TAG" --notes "APK ${APP_NAME} build nomor ${{ github.run_number }}."
           fi

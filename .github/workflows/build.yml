@@ -1,9 +1,5 @@
 name: Build APK Umum
 
-# Cara pakai: upload 1 file HTML ke halaman utama repo (nama bebas, mis. index.html).
-# Opsional: pengaturan.txt, folder icons (gambar PNG), debug.keystore.
-# Build jalan otomatis setiap ada perubahan di repo. APK ada di tab Actions > Artifacts.
-
 on:
   workflow_dispatch:
   push:
@@ -18,6 +14,7 @@ jobs:
     steps:
       - name: Ambil file dari repository
         uses: actions/checkout@v4
+ 
 
       - name: Pasang Node.js
         uses: actions/setup-node@v4

@@ -1,75 +1,189 @@
-name: Build Android APK (HARGAPAS)
+name: Build APK Umum
+
+# Cara pakai: upload 1 file HTML ke halaman utama repo (nama bebas, mis. index.html).
+# Opsional: pengaturan.txt, folder icons (gambar PNG), debug.keystore.
+# Build jalan otomatis setiap ada perubahan di repo. APK ada di tab Actions > Artifacts.
 
 on:
-  push:
-    branches: [ "main", "master" ]
   workflow_dispatch:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Ambil file dari repository
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
+      - name: Pasang Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
+      - name: Pasang Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      - name: Baca file HTML, nama aplikasi, dan pengaturan
+        run: |
+          # 1. Cari file HTML (index.html dulu, kalau tidak ada pakai .html pertama di halaman utama)
+          if [ -f index.html ]; then HTML_FILE="index.html"
+          else HTML_FILE=$(ls *.html 2>/dev/null | head -n 1)
+          fi
+          if [ -z "$HTML_FILE" ]; then
+            echo "ERROR: Tidak ada file .html di halaman utama repo. Upload file HTML dulu."
+            exit 1
+          fi
 
-    - name: Install Cordova CLI
-      run: npm install -g cordova
+          # 2. Baca pengaturan.txt (jika ada)
+          getcfg() { [ -f pengaturan.txt ] && grep -i "^$1=" pengaturan.txt | head -n 1 | cut -d= -f2- | tr -d '\r' | sed 's/^ *//;s/ *$//'; }
+          NAME=$(getcfg nama || true)
+          WANT_LOC=$(getcfg lokasi || true)
+          WANT_DREAM=$(getcfg screensaver || true)
 
-    - name: Create Cordova Project
-      run: |
-        cordova create hargapas_app com.ahcreativa.hargapas HargaPas
-        cd hargapas_app
-        cordova platform add android@12.0.0
+          # 3. Nama aplikasi: dari pengaturan.txt, kalau kosong pakai nama file HTML (atau nama repo untuk index.html)
+          if [ -z "$NAME" ]; then
+            BASE="${HTML_FILE%.html}"
+            if [ "$BASE" = "index" ]; then BASE="${GITHUB_REPOSITORY#*/}"; fi
+            NAME="$BASE"
+          fi
+          NAME=$(printf '%s' "$NAME" | tr -cd 'A-Za-z0-9 ._-')
+          if [ -z "$NAME" ]; then NAME="Aplikasi"; fi
 
-    - name: Configure Cordova Plugins
-      run: |
-        cd hargapas_app
-        # Menambahkan plugin printer agar fungsi window.plugins.printer aktif di APK
-        cordova plugin add cordova-plugin-printer
-        # Menambahkan plugin file untuk izin sistem penyimpanan lokal internal
-        cordova plugin add cordova-plugin-file
+          # 4. Nama paket otomatis: com.<pemilik repo>.<nama aplikasi>
+          SLUG=$(printf '%s' "$NAME" | tr 'A-Z' 'a-z' | tr -cd 'a-z0-9')
+          if [ -z "$SLUG" ]; then SLUG="app"; fi
+          case "$SLUG" in [0-9]*) SLUG="a$SLUG";; esac
+          OWNER=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr 'A-Z' 'a-z' | tr -cd 'a-z0-9')
+          if [ -z "$OWNER" ]; then OWNER="app"; fi
+          case "$OWNER" in [0-9]*) OWNER="a$OWNER";; esac
+          PKG="com.$OWNER.$SLUG"
 
-    - name: Inject HTML Calculator & Icon Configuration
-      run: |
-        # Mengosongkan folder default bawaan Cordova www
-        rm -rf hargapas_app/www/*
-        
-        # Salin seluruh isi file kode sumber web dari root repositori ke folder aset Cordova
-        cp -r * hargapas_app/www/ 2>/dev/null || true
-        
-        # Pindahkan file ikon HARGAPAS.png ke folder resource Cordova jika disediakan oleh user
-        if [ -f "HARGAPAS.png" ]; then
-          mkdir -p hargapas_app/res/icon/android
-          cp HARGAPAS.png hargapas_app/res/icon/android/icon.png
-          
-          # Menyisipkan konfigurasi XML tag icon aplikasi utama di config.xml
-          sed -i '/<\/widget>/i \    <platform name="android">
-        <icon src="res/icon/android/icon.png" />
-    <\/platform>' hargapas_app/config.xml
-        fi
+          # 5. Icon: folder icons dulu, lalu halaman utama
+          ICON_FILE=""
+          if [ -f icons/icon.png ]; then ICON_FILE="icons/icon.png"
+          elif ls icons/*.png >/dev/null 2>&1; then ICON_FILE=$(ls icons/*.png | head -n 1)
+          elif [ -f icon.png ]; then ICON_FILE="icon.png"
+          elif ls *.png >/dev/null 2>&1; then ICON_FILE=$(ls *.png | head -n 1)
+          fi
 
-    - name: Build Android APK (Debug Mode)
-      run: |
-        cd hargapas_app
-        cordova build android --debug
+          LOWER_LOC=$(printf '%s' "$WANT_LOC" | tr 'A-Z' 'a-z')
+          LOWER_DREAM=$(printf '%s' "$WANT_DREAM" | tr 'A-Z' 'a-z')
 
-    - name: Upload Finished APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: HARGAPAS-Calculator-APK
-        path: hargapas_app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          {
+            echo "HTML_FILE=$HTML_FILE"
+            echo "APP_NAME=$NAME"
+            echo "SLUG=$SLUG"
+            echo "PKG=$PKG"
+            echo "ICON_FILE=$ICON_FILE"
+            echo "WANT_LOC=$LOWER_LOC"
+            echo "WANT_DREAM=$LOWER_DREAM"
+          } >> "$GITHUB_ENV"
+
+          echo "File HTML     : $HTML_FILE"
+          echo "Nama aplikasi : $NAME"
+          echo "Nama paket    : $PKG"
+          echo "Icon          : ${ICON_FILE:-(bawaan)}"
+          echo "Izin lokasi   : ${LOWER_LOC:-tidak}"
+          echo "Screensaver   : ${LOWER_DREAM:-tidak}"
+
+      - name: Siapkan proyek Android
+        run: |
+          mkdir -p www
+          cp "$HTML_FILE" www/index.html
+          npm init -y
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor/app@6
+          npx cap init "$APP_NAME" "$PKG" --web-dir=www
+          npx cap add android
+          if [ "$WANT_LOC" = "ya" ]; then
+            sed -i 's#<application#<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <application#' android/app/src/main/AndroidManifest.xml
+          fi
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+
+      - name: Tambahkan fitur simpan PDF ke folder Download (jika HTML memakai AndroidSaver)
+        run: |
+          grep -q 'AndroidSaver' www/index.html || { echo "HTML tidak memakai AndroidSaver, langkah ini dilewati."; exit 0; }
+          PKG_DIR="android/app/src/main/java/$(echo "$PKG" | tr . /)"
+          echo 'cGFja2FnZSBfX1BLR19fOwoKaW1wb3J0IGFuZHJvaWQub3MuQnVuZGxlOwppbXBvcnQgY29tLmdldGNhcGFjaXRvci5CcmlkZ2VBY3Rpdml0eTsKCnB1YmxpYyBjbGFzcyBNYWluQWN0aXZpdHkgZXh0ZW5kcyBCcmlkZ2VBY3Rpdml0eSB7CiAgICBAT3ZlcnJpZGUKICAgIHB1YmxpYyB2b2lkIG9uQ3JlYXRlKEJ1bmRsZSBzYXZlZEluc3RhbmNlU3RhdGUpIHsKICAgICAgICBzdXBlci5vbkNyZWF0ZShzYXZlZEluc3RhbmNlU3RhdGUpOwogICAgICAgIGdldEJyaWRnZSgpLmdldFdlYlZpZXcoKS5hZGRKYXZhc2NyaXB0SW50ZXJmYWNlKG5ldyBGaWxlU2F2ZXIodGhpcyksICJBbmRyb2lkU2F2ZXIiKTsKICAgIH0KfQo=' | base64 -d > "$PKG_DIR/MainActivity.java"
+          echo 'cGFja2FnZSBfX1BLR19fOwoKaW1wb3J0IGFuZHJvaWQuTWFuaWZlc3Q7CmltcG9ydCBhbmRyb2lkLmFwcC5BY3Rpdml0eTsKaW1wb3J0IGFuZHJvaWQuY29udGVudC5Db250ZW50VmFsdWVzOwppbXBvcnQgYW5kcm9pZC5jb250ZW50LnBtLlBhY2thZ2VNYW5hZ2VyOwppbXBvcnQgYW5kcm9pZC5kYXRhYmFzZS5DdXJzb3I7CmltcG9ydCBhbmRyb2lkLm1lZGlhLk1lZGlhU2Nhbm5lckNvbm5lY3Rpb247CmltcG9ydCBhbmRyb2lkLm5ldC5Vcmk7CmltcG9ydCBhbmRyb2lkLm9zLkJ1aWxkOwppbXBvcnQgYW5kcm9pZC5vcy5FbnZpcm9ubWVudDsKaW1wb3J0IGFuZHJvaWQucHJvdmlkZXIuTWVkaWFTdG9yZTsKaW1wb3J0IGFuZHJvaWQudXRpbC5CYXNlNjQ7CmltcG9ydCBhbmRyb2lkLndlYmtpdC5KYXZhc2NyaXB0SW50ZXJmYWNlOwppbXBvcnQgYW5kcm9pZHguY29yZS5hcHAuQWN0aXZpdHlDb21wYXQ7CmltcG9ydCBhbmRyb2lkeC5jb3JlLmNvbnRlbnQuQ29udGV4dENvbXBhdDsKaW1wb3J0IGphdmEuaW8uRmlsZTsKaW1wb3J0IGphdmEuaW8uRmlsZU91dHB1dFN0cmVhbTsKaW1wb3J0IGphdmEuaW8uT3V0cHV0U3RyZWFtOwoKcHVibGljIGNsYXNzIEZpbGVTYXZlciB7CiAgICBwcml2YXRlIGZpbmFsIEFjdGl2aXR5IGFjdGl2aXR5OwoKICAgIHB1YmxpYyBGaWxlU2F2ZXIoQWN0aXZpdHkgYWN0aXZpdHkpIHsKICAgICAgICB0aGlzLmFjdGl2aXR5ID0gYWN0aXZpdHk7CiAgICB9CgogICAgQEphdmFzY3JpcHRJbnRlcmZhY2UKICAgIHB1YmxpYyBTdHJpbmcgc2F2ZVBkZihTdHJpbmcgZmlsZU5hbWUsIFN0cmluZyBiYXNlNjQpIHsKICAgICAgICB0cnkgewogICAgICAgICAgICBieXRlW10gZGF0YSA9IEJhc2U2NC5kZWNvZGUoYmFzZTY0LCBCYXNlNjQuREVGQVVMVCk7CiAgICAgICAgICAgIFN0cmluZyBzYWZlID0gZmlsZU5hbWUucmVwbGFjZUFsbCgiW15BLVphLXowLTkuXyAtXSIsICJfIik7CiAgICAgICAgICAgIGlmICghc2FmZS50b0xvd2VyQ2FzZSgpLmVuZHNXaXRoKCIucGRmIikpIHNhZmUgPSBzYWZlICsgIi5wZGYiOwoKICAgICAgICAgICAgaWYgKEJ1aWxkLlZFUlNJT04uU0RLX0lOVCA+PSAyOSkgewogICAgICAgICAgICAgICAgQ29udGVudFZhbHVlcyB2ID0gbmV3IENvbnRlbnRWYWx1ZXMoKTsKICAgICAgICAgICAgICAgIHYucHV0KE1lZGlhU3RvcmUuTWVkaWFDb2x1bW5zLkRJU1BMQVlfTkFNRSwgc2FmZSk7CiAgICAgICAgICAgICAgICB2LnB1dChNZWRpYVN0b3JlLk1lZGlhQ29sdW1ucy5NSU1FX1RZUEUsICJhcHBsaWNhdGlvbi9wZGYiKTsKICAgICAgICAgICAgICAgIHYucHV0KE1lZGlhU3RvcmUuTWVkaWFDb2x1bW5zLlJFTEFUSVZFX1BBVEgsIEVudmlyb25tZW50LkRJUkVDVE9SWV9ET1dOTE9BRFMpOwogICAgICAgICAgICAgICAgVXJpIHVyaSA9IGFjdGl2aXR5LmdldENvbnRlbnRSZXNvbHZlcigpLmluc2VydChNZWRpYVN0b3JlLkRvd25sb2Fkcy5FWFRFUk5BTF9DT05URU5UX1VSSSwgdik7CiAgICAgICAgICAgICAgICBpZiAodXJpID09IG51bGwpIHJldHVybiAiRVJSOnRpZGFrIGJpc2EgbWVtYnVhdCBmaWxlIjsKICAgICAgICAgICAgICAgIE91dHB1dFN0cmVhbSBvcyA9IGFjdGl2aXR5LmdldENvbnRlbnRSZXNvbHZlcigpLm9wZW5PdXRwdXRTdHJlYW0odXJpKTsKICAgICAgICAgICAgICAgIGlmIChvcyA9PSBudWxsKSByZXR1cm4gIkVSUjp0aWRhayBiaXNhIG1lbnVsaXMgZmlsZSI7CiAgICAgICAgICAgICAgICB0cnkgewogICAgICAgICAgICAgICAgICAgIG9zLndyaXRlKGRhdGEpOwogICAgICAgICAgICAgICAgICAgIG9zLmZsdXNoKCk7CiAgICAgICAgICAgICAgICB9IGZpbmFsbHkgewogICAgICAgICAgICAgICAgICAgIG9zLmNsb3NlKCk7CiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBTdHJpbmcgc2hvd24gPSBzYWZlOwogICAgICAgICAgICAgICAgQ3Vyc29yIGMgPSBhY3Rpdml0eS5nZXRDb250ZW50UmVzb2x2ZXIoKS5xdWVyeSh1cmksIG5ldyBTdHJpbmdbXXtNZWRpYVN0b3JlLk1lZGlhQ29sdW1ucy5ESVNQTEFZX05BTUV9LCBudWxsLCBudWxsLCBudWxsKTsKICAgICAgICAgICAgICAgIGlmIChjICE9IG51bGwpIHsKICAgICAgICAgICAgICAgICAgICB0cnkgewogICAgICAgICAgICAgICAgICAgICAgICBpZiAoYy5tb3ZlVG9GaXJzdCgpKSBzaG93biA9IGMuZ2V0U3RyaW5nKDApOwogICAgICAgICAgICAgICAgICAgIH0gZmluYWxseSB7CiAgICAgICAgICAgICAgICAgICAgICAgIGMuY2xvc2UoKTsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICByZXR1cm4gIk9LOiIgKyBzaG93bjsKICAgICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgIGlmIChDb250ZXh0Q29tcGF0LmNoZWNrU2VsZlBlcm1pc3Npb24oYWN0aXZpdHksIE1hbmlmZXN0LnBlcm1pc3Npb24uV1JJVEVfRVhURVJOQUxfU1RPUkFHRSkgIT0gUGFja2FnZU1hbmFnZXIuUEVSTUlTU0lPTl9HUkFOVEVEKSB7CiAgICAgICAgICAgICAgICAgICAgQWN0aXZpdHlDb21wYXQucmVxdWVzdFBlcm1pc3Npb25zKGFjdGl2aXR5LCBuZXcgU3RyaW5nW117TWFuaWZlc3QucGVybWlzc2lvbi5XUklURV9FWFRFUk5BTF9TVE9SQUdFfSwgNDcxMSk7CiAgICAgICAgICAgICAgICAgICAgcmV0dXJuICJQRVJNSVNTSU9OIjsKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIEZpbGUgZGlyID0gRW52aXJvbm1lbnQuZ2V0RXh0ZXJuYWxTdG9yYWdlUHVibGljRGlyZWN0b3J5KEVudmlyb25tZW50LkRJUkVDVE9SWV9ET1dOTE9BRFMpOwogICAgICAgICAgICAgICAgaWYgKCFkaXIuZXhpc3RzKCkpIGRpci5ta2RpcnMoKTsKICAgICAgICAgICAgICAgIEZpbGUgZiA9IG5ldyBGaWxlKGRpciwgc2FmZSk7CiAgICAgICAgICAgICAgICBpbnQgbiA9IDE7CiAgICAgICAgICAgICAgICBTdHJpbmcgYmFzZSA9IHNhZmUuc3Vic3RyaW5nKDAsIHNhZmUubGVuZ3RoKCkgLSA0KTsKICAgICAgICAgICAgICAgIHdoaWxlIChmLmV4aXN0cygpKSB7CiAgICAgICAgICAgICAgICAgICAgZiA9IG5ldyBGaWxlKGRpciwgYmFzZSArICIgKCIgKyBuICsgIikucGRmIik7CiAgICAgICAgICAgICAgICAgICAgbisrOwogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgRmlsZU91dHB1dFN0cmVhbSBmb3MgPSBuZXcgRmlsZU91dHB1dFN0cmVhbShmKTsKICAgICAgICAgICAgICAgIHRyeSB7CiAgICAgICAgICAgICAgICAgICAgZm9zLndyaXRlKGRhdGEpOwogICAgICAgICAgICAgICAgICAgIGZvcy5mbHVzaCgpOwogICAgICAgICAgICAgICAgfSBmaW5hbGx5IHsKICAgICAgICAgICAgICAgICAgICBmb3MuY2xvc2UoKTsKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIE1lZGlhU2Nhbm5lckNvbm5lY3Rpb24uc2NhbkZpbGUoYWN0aXZpdHksIG5ldyBTdHJpbmdbXXtmLmdldEFic29sdXRlUGF0aCgpfSwgbmV3IFN0cmluZ1tdeyJhcHBsaWNhdGlvbi9wZGYifSwgbnVsbCk7CiAgICAgICAgICAgICAgICByZXR1cm4gIk9LOiIgKyBmLmdldE5hbWUoKTsKICAgICAgICAgICAgfQogICAgICAgIH0gY2F0Y2ggKEV4Y2VwdGlvbiBlKSB7CiAgICAgICAgICAgIHJldHVybiAiRVJSOiIgKyBlLmdldE1lc3NhZ2UoKTsKICAgICAgICB9CiAgICB9Cn0K' | base64 -d > "$PKG_DIR/FileSaver.java"
+          sed -i "s/__PKG__/$PKG/" "$PKG_DIR/MainActivity.java" "$PKG_DIR/FileSaver.java"
+          sed -i 's#<application#<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />\n    <application#' android/app/src/main/AndroidManifest.xml
+
+      - name: Agar aplikasi jalan tanpa internet (Tailwind, FontAwesome, Google Fonts)
+        continue-on-error: true
+        run: |
+          grep -qiE 'cdn\.tailwindcss\.com|font-awesome|fonts\.googleapis\.com' www/index.html || { echo "Tidak ada sumber dari internet di HTML, langkah ini dilewati."; exit 0; }
+          mkdir -p /tmp/off
+          cd /tmp/off
+          npm init -y > /dev/null
+          npm install tailwindcss@3.4.17 @fortawesome/fontawesome-free@6 @fontsource/inter@5
+          cd "$GITHUB_WORKSPACE"
+          echo 'Y29uc3QgZnMgPSByZXF1aXJlKCdmcycpOwpjb25zdCBjcCA9IHJlcXVpcmUoJ2NoaWxkX3Byb2Nlc3MnKTsKY29uc3Qgcm9vdCA9IHByb2Nlc3MuZW52LkdJVEhVQl9XT1JLU1BBQ0U7CmNvbnN0IG9mZiA9ICcvdG1wL29mZic7CmxldCBodG1sID0gZnMucmVhZEZpbGVTeW5jKHJvb3QgKyAnL3d3dy9pbmRleC5odG1sJywgJ3V0ZjgnKTsKCi8vIDEuIFRhaWx3aW5kOiBidWF0IGZpbGUgQ1NTIGRhcmkga2VsYXMgeWFuZyBkaXBha2FpIGRpIEhUTUwKaWYgKC9jZG5cLnRhaWx3aW5kY3NzXC5jb20vaS50ZXN0KGh0bWwpKSB7CiAgbGV0IGNmZ1RleHQgPSAne30nOwogIGNvbnN0IG0gPSBodG1sLm1hdGNoKC88c2NyaXB0PlxzKnRhaWx3aW5kXC5jb25maWdccyo9XHMqKFtcc1xTXSo/KVxzKjxcL3NjcmlwdD4vKTsKICBpZiAobSkgY2ZnVGV4dCA9IG1bMV0ucmVwbGFjZSgvO1xzKiQvLCAnJyk7CiAgZnMud3JpdGVGaWxlU3luYyhvZmYgKyAnL3RhaWx3aW5kLmNvbmZpZy5qcycsCiAgICAnY29uc3QgY2ZnID0gKCcgKyBjZmdUZXh0ICsgJyk7XG5jZmcuY29udGVudCA9IFsnICsgSlNPTi5zdHJpbmdpZnkocm9vdCArICcvd3d3L2luZGV4Lmh0bWwnKSArICddO1xubW9kdWxlLmV4cG9ydHMgPSBjZmc7XG4nKTsKICBmcy53cml0ZUZpbGVTeW5jKG9mZiArICcvaW4uY3NzJywgJ0B0YWlsd2luZCBiYXNlO1xuQHRhaWx3aW5kIGNvbXBvbmVudHM7XG5AdGFpbHdpbmQgdXRpbGl0aWVzO1xuJyk7CiAgY3AuZXhlY1N5bmMoJ25weCB0YWlsd2luZGNzcyAtYyAnICsgb2ZmICsgJy90YWlsd2luZC5jb25maWcuanMgLWkgJyArIG9mZiArICcvaW4uY3NzIC1vICcgKyByb290ICsgJy93d3cvdGFpbHdpbmQuY3NzIC0tbWluaWZ5JywKICAgIHsgY3dkOiBvZmYsIHN0ZGlvOiAnaW5oZXJpdCcgfSk7CiAgaHRtbCA9IGh0bWwucmVwbGFjZSgvPHNjcmlwdD5ccyp0YWlsd2luZFwuY29uZmlnXHMqPVtcc1xTXSo/PFwvc2NyaXB0Pi8sICcnKTsKICBodG1sID0gaHRtbC5yZXBsYWNlKC88c2NyaXB0W14+XSpjZG5cLnRhaWx3aW5kY3NzXC5jb21bXj5dKj48XC9zY3JpcHQ+L2ksICc8bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9InRhaWx3aW5kLmNzcyI+Jyk7Cn0KCi8vIDIuIEZvbnRBd2Vzb21lOiBzYWxpbiBDU1MgZGFuIGZvbnQga2UgZGFsYW0gYXBsaWthc2kKaWYgKC9mb250LWF3ZXNvbWUvaS50ZXN0KGh0bWwpKSB7CiAgY29uc3QgZmEgPSBvZmYgKyAnL25vZGVfbW9kdWxlcy9AZm9ydGF3ZXNvbWUvZm9udGF3ZXNvbWUtZnJlZSc7CiAgZnMubWtkaXJTeW5jKHJvb3QgKyAnL3d3dy9mYS9jc3MnLCB7IHJlY3Vyc2l2ZTogdHJ1ZSB9KTsKICBmcy5jb3B5RmlsZVN5bmMoZmEgKyAnL2Nzcy9hbGwubWluLmNzcycsIHJvb3QgKyAnL3d3dy9mYS9jc3MvYWxsLm1pbi5jc3MnKTsKICBmcy5jcFN5bmMoZmEgKyAnL3dlYmZvbnRzJywgcm9vdCArICcvd3d3L2ZhL3dlYmZvbnRzJywgeyByZWN1cnNpdmU6IHRydWUgfSk7CiAgaHRtbCA9IGh0bWwucmVwbGFjZSgvPGxpbmtbXj5dKmZvbnQtYXdlc29tZVtePl0qPi9pLCAnPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJmYS9jc3MvYWxsLm1pbi5jc3MiPicpOwp9CgovLyAzLiBHb29nbGUgRm9udHM6IHBha2FpIGZvbnQgSW50ZXIgZGFyaSBwYWtldCBsb2thbCwgYXRhdSBoYXB1cyB0YXV0YW4gamlrYSBmb250IGxhaW4KaWYgKC9mb250c1wuZ29vZ2xlYXBpc1wuY29tL2kudGVzdChodG1sKSkgewogIGxldCBjc3MgPSAnJzsKICBpZiAoL2ZhbWlseT1JbnRlci9pLnRlc3QoaHRtbCkpIHsKICAgIGZzLm1rZGlyU3luYyhyb290ICsgJy93d3cvZm9udHMnLCB7IHJlY3Vyc2l2ZTogdHJ1ZSB9KTsKICAgIFszMDAsIDQwMCwgNTAwLCA2MDAsIDcwMCwgODAwLCA5MDBdLmZvckVhY2goZnVuY3Rpb24gKHcpIHsKICAgICAgY29uc3QgZiA9IG9mZiArICcvbm9kZV9tb2R1bGVzL0Bmb250c291cmNlL2ludGVyL2ZpbGVzL2ludGVyLWxhdGluLScgKyB3ICsgJy1ub3JtYWwud29mZjInOwogICAgICBpZiAoZnMuZXhpc3RzU3luYyhmKSkgewogICAgICAgIGZzLmNvcHlGaWxlU3luYyhmLCByb290ICsgJy93d3cvZm9udHMvaW50ZXItbGF0aW4tJyArIHcgKyAnLW5vcm1hbC53b2ZmMicpOwogICAgICAgIGNzcyArPSAiQGZvbnQtZmFjZXtmb250LWZhbWlseTonSW50ZXInO2ZvbnQtc3R5bGU6bm9ybWFsO2ZvbnQtZGlzcGxheTpzd2FwO2ZvbnQtd2VpZ2h0OiIgKyB3ICsKICAgICAgICAgICAgICAgIjtzcmM6dXJsKGZvbnRzL2ludGVyLWxhdGluLSIgKyB3ICsgIi1ub3JtYWwud29mZjIpIGZvcm1hdCgnd29mZjInKTt9XG4iOwogICAgICB9CiAgICB9KTsKICAgIGZzLndyaXRlRmlsZVN5bmMocm9vdCArICcvd3d3L2ZvbnRzLmNzcycsIGNzcyk7CiAgfQogIGh0bWwgPSBodG1sLnJlcGxhY2UoLzxsaW5rW14+XSooZm9udHNcLmdvb2dsZWFwaXNcLmNvbXxmb250c1wuZ3N0YXRpY1wuY29tKVtePl0qPlxzKi9naSwgJycpOwogIGlmIChjc3MpIGh0bWwgPSBodG1sLnJlcGxhY2UoJzwvaGVhZD4nLCAnPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJmb250cy5jc3MiPlxuPC9oZWFkPicpOwp9Cgpmcy53cml0ZUZpbGVTeW5jKHJvb3QgKyAnL3d3dy9pbmRleC5odG1sJywgaHRtbCk7CmNvbnNvbGUubG9nKCdIVE1MIHNla2FyYW5nIHRpZGFrIGJlcmdhbnR1bmcgcGFkYSBpbnRlcm5ldC4nKTsK' | base64 -d > /tmp/offline.js
+          node /tmp/offline.js
+
+      - name: Tambahkan screensaver (jika screensaver=ya)
+        if: env.WANT_DREAM == 'ya'
+        run: |
+          PKG_DIR="android/app/src/main/java/$(echo "$PKG" | tr . /)"
+          mkdir -p "$PKG_DIR" android/app/src/main/res/xml
+          echo 'cGFja2FnZSBfX1BLR19fOwoKaW1wb3J0IGFuZHJvaWQuYW5ub3RhdGlvbi5TdXBwcmVzc0xpbnQ7CmltcG9ydCBhbmRyb2lkLmdyYXBoaWNzLkNvbG9yOwppbXBvcnQgYW5kcm9pZC5zZXJ2aWNlLmRyZWFtcy5EcmVhbVNlcnZpY2U7CmltcG9ydCBhbmRyb2lkLndlYmtpdC5XZWJSZXNvdXJjZVJlcXVlc3Q7CmltcG9ydCBhbmRyb2lkLndlYmtpdC5XZWJSZXNvdXJjZVJlc3BvbnNlOwppbXBvcnQgYW5kcm9pZC53ZWJraXQuV2ViU2V0dGluZ3M7CmltcG9ydCBhbmRyb2lkLndlYmtpdC5XZWJWaWV3OwppbXBvcnQgYW5kcm9pZC53ZWJraXQuV2ViVmlld0NsaWVudDsKaW1wb3J0IGFuZHJvaWR4LndlYmtpdC5XZWJWaWV3QXNzZXRMb2FkZXI7CmltcG9ydCBqYXZhLmlvLklucHV0U3RyZWFtOwoKcHVibGljIGNsYXNzIEFwcERyZWFtIGV4dGVuZHMgRHJlYW1TZXJ2aWNlIHsKICAgIHByaXZhdGUgV2ViVmlldyB3ZWJWaWV3OwoKICAgIEBTdXBwcmVzc0xpbnQoIlNldEphdmFTY3JpcHRFbmFibGVkIikKICAgIEBPdmVycmlkZQogICAgcHVibGljIHZvaWQgb25BdHRhY2hlZFRvV2luZG93KCkgewogICAgICAgIHN1cGVyLm9uQXR0YWNoZWRUb1dpbmRvdygpOwogICAgICAgIHNldEludGVyYWN0aXZlKGZhbHNlKTsKICAgICAgICBzZXRGdWxsc2NyZWVuKHRydWUpOwoKICAgICAgICBmaW5hbCBXZWJWaWV3QXNzZXRMb2FkZXIgbG9hZGVyID0gbmV3IFdlYlZpZXdBc3NldExvYWRlci5CdWlsZGVyKCkKICAgICAgICAgICAgLnNldERvbWFpbigibG9jYWxob3N0IikKICAgICAgICAgICAgLmFkZFBhdGhIYW5kbGVyKCIvIiwgbmV3IFdlYlZpZXdBc3NldExvYWRlci5QYXRoSGFuZGxlcigpIHsKICAgICAgICAgICAgICAgIEBPdmVycmlkZQogICAgICAgICAgICAgICAgcHVibGljIFdlYlJlc291cmNlUmVzcG9uc2UgaGFuZGxlKFN0cmluZyBwYXRoKSB7CiAgICAgICAgICAgICAgICAgICAgdHJ5IHsKICAgICAgICAgICAgICAgICAgICAgICAgaWYgKHBhdGggPT0gbnVsbCB8fCBwYXRoLmlzRW1wdHkoKSkgcGF0aCA9ICJpbmRleC5odG1sIjsKICAgICAgICAgICAgICAgICAgICAgICAgSW5wdXRTdHJlYW0gaXMgPSBnZXRBc3NldHMoKS5vcGVuKCJwdWJsaWMvIiArIHBhdGgpOwogICAgICAgICAgICAgICAgICAgICAgICBTdHJpbmcgbWltZSA9ICJhcHBsaWNhdGlvbi9vY3RldC1zdHJlYW0iOwogICAgICAgICAgICAgICAgICAgICAgICBpZiAocGF0aC5lbmRzV2l0aCgiLmh0bWwiKSkgbWltZSA9ICJ0ZXh0L2h0bWwiOwogICAgICAgICAgICAgICAgICAgICAgICBlbHNlIGlmIChwYXRoLmVuZHNXaXRoKCIuanMiKSkgbWltZSA9ICJhcHBsaWNhdGlvbi9qYXZhc2NyaXB0IjsKICAgICAgICAgICAgICAgICAgICAgICAgZWxzZSBpZiAocGF0aC5lbmRzV2l0aCgiLmNzcyIpKSBtaW1lID0gInRleHQvY3NzIjsKICAgICAgICAgICAgICAgICAgICAgICAgZWxzZSBpZiAocGF0aC5lbmRzV2l0aCgiLnBuZyIpKSBtaW1lID0gImltYWdlL3BuZyI7CiAgICAgICAgICAgICAgICAgICAgICAgIGVsc2UgaWYgKHBhdGguZW5kc1dpdGgoIi5qcGciKSB8fCBwYXRoLmVuZHNXaXRoKCIuanBlZyIpKSBtaW1lID0gImltYWdlL2pwZWciOwogICAgICAgICAgICAgICAgICAgICAgICBlbHNlIGlmIChwYXRoLmVuZHNXaXRoKCIuc3ZnIikpIG1pbWUgPSAiaW1hZ2Uvc3ZnK3htbCI7CiAgICAgICAgICAgICAgICAgICAgICAgIGVsc2UgaWYgKHBhdGguZW5kc1dpdGgoIi5qc29uIikpIG1pbWUgPSAiYXBwbGljYXRpb24vanNvbiI7CiAgICAgICAgICAgICAgICAgICAgICAgIHJldHVybiBuZXcgV2ViUmVzb3VyY2VSZXNwb25zZShtaW1lLCAidXRmLTgiLCBpcyk7CiAgICAgICAgICAgICAgICAgICAgfSBjYXRjaCAoRXhjZXB0aW9uIGUpIHsKICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIG51bGw7CiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9KQogICAgICAgICAgICAuYnVpbGQoKTsKCiAgICAgICAgd2ViVmlldyA9IG5ldyBXZWJWaWV3KHRoaXMpOwogICAgICAgIHdlYlZpZXcuc2V0QmFja2dyb3VuZENvbG9yKENvbG9yLkJMQUNLKTsKICAgICAgICBXZWJTZXR0aW5ncyBzdCA9IHdlYlZpZXcuZ2V0U2V0dGluZ3MoKTsKICAgICAgICBzdC5zZXRKYXZhU2NyaXB0RW5hYmxlZCh0cnVlKTsKICAgICAgICBzdC5zZXREb21TdG9yYWdlRW5hYmxlZCh0cnVlKTsKICAgICAgICBzdC5zZXRNZWRpYVBsYXliYWNrUmVxdWlyZXNVc2VyR2VzdHVyZShmYWxzZSk7CiAgICAgICAgd2ViVmlldy5zZXRXZWJWaWV3Q2xpZW50KG5ldyBXZWJWaWV3Q2xpZW50KCkgewogICAgICAgICAgICBAT3ZlcnJpZGUKICAgICAgICAgICAgcHVibGljIFdlYlJlc291cmNlUmVzcG9uc2Ugc2hvdWxkSW50ZXJjZXB0UmVxdWVzdChXZWJWaWV3IHZpZXcsIFdlYlJlc291cmNlUmVxdWVzdCByZXF1ZXN0KSB7CiAgICAgICAgICAgICAgICByZXR1cm4gbG9hZGVyLnNob3VsZEludGVyY2VwdFJlcXVlc3QocmVxdWVzdC5nZXRVcmwoKSk7CiAgICAgICAgICAgIH0KICAgICAgICB9KTsKICAgICAgICBzZXRDb250ZW50Vmlldyh3ZWJWaWV3KTsKICAgICAgICB3ZWJWaWV3LmxvYWRVcmwoImh0dHBzOi8vbG9jYWxob3N0L2luZGV4Lmh0bWwiKTsKICAgIH0KCiAgICBAT3ZlcnJpZGUKICAgIHB1YmxpYyB2b2lkIG9uRGV0YWNoZWRGcm9tV2luZG93KCkgewogICAgICAgIHN1cGVyLm9uRGV0YWNoZWRGcm9tV2luZG93KCk7CiAgICAgICAgaWYgKHdlYlZpZXcgIT0gbnVsbCkgewogICAgICAgICAgICB3ZWJWaWV3LmRlc3Ryb3koKTsKICAgICAgICAgICAgd2ViVmlldyA9IG51bGw7CiAgICAgICAgfQogICAgfQp9Cg==' | base64 -d > "$PKG_DIR/AppDream.java"
+          sed -i "s/__PKG__/$PKG/" "$PKG_DIR/AppDream.java"
+          echo 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPGRyZWFtIHhtbG5zOmFuZHJvaWQ9Imh0dHA6Ly9zY2hlbWFzLmFuZHJvaWQuY29tL2Fway9yZXMvYW5kcm9pZCIgLz4K' | base64 -d > android/app/src/main/res/xml/app_dream.xml
+          echo 'aW1wb3J0IG9zCnAgPSAnYW5kcm9pZC9hcHAvc3JjL21haW4vQW5kcm9pZE1hbmlmZXN0LnhtbCcKcyA9IG9wZW4ocCwgZW5jb2Rpbmc9J3V0Zi04JykucmVhZCgpCnNlcnZpY2UgPSAiIiIKICAgIDxzZXJ2aWNlCiAgICAgICAgYW5kcm9pZDpuYW1lPVwiIiIiICsgb3MuZW52aXJvblsnUEtHJ10gKyAiIiIuQXBwRHJlYW0iCiAgICAgICAgYW5kcm9pZDpleHBvcnRlZD0idHJ1ZSIKICAgICAgICBhbmRyb2lkOmxhYmVsPVwiIiIiICsgb3MuZW52aXJvblsnQVBQX05BTUUnXSArICIiIiIKICAgICAgICBhbmRyb2lkOmljb249IkBtaXBtYXAvaWNfbGF1bmNoZXIiCiAgICAgICAgYW5kcm9pZDpwZXJtaXNzaW9uPSJhbmRyb2lkLnBlcm1pc3Npb24uQklORF9EUkVBTV9TRVJWSUNFIj4KICAgICAgICA8aW50ZW50LWZpbHRlcj4KICAgICAgICAgICAgPGFjdGlvbiBhbmRyb2lkOm5hbWU9ImFuZHJvaWQuc2VydmljZS5kcmVhbXMuRHJlYW1TZXJ2aWNlIiAvPgogICAgICAgICAgICA8Y2F0ZWdvcnkgYW5kcm9pZDpuYW1lPSJhbmRyb2lkLmludGVudC5jYXRlZ29yeS5ERUZBVUxUIiAvPgogICAgICAgIDwvaW50ZW50LWZpbHRlcj4KICAgICAgICA8bWV0YS1kYXRhIGFuZHJvaWQ6bmFtZT0iYW5kcm9pZC5zZXJ2aWNlLmRyZWFtIiBhbmRyb2lkOnJlc291cmNlPSJAeG1sL2FwcF9kcmVhbSIgLz4KICAgIDwvc2VydmljZT4KIiIiCnMgPSBzLnJlcGxhY2UoJzwvYXBwbGljYXRpb24+Jywgc2VydmljZSArICc8L2FwcGxpY2F0aW9uPicpCm9wZW4ocCwgJ3cnLCBlbmNvZGluZz0ndXRmLTgnKS53cml0ZShzKQo=' | base64 -d > /tmp/add_service.py
+          python3 /tmp/add_service.py
+          printf '\ndependencies {\n    implementation "androidx.webkit:webkit:1.9.0"\n}\n' >> android/app/build.gradle
+
+      - name: Sinkronkan file web ke Android
+        run: npx cap sync android
+
+      - name: Pasang icon (jika ada gambar PNG)
+        run: |
+          if [ -n "$ICON_FILE" ]; then
+            echo "Memakai icon: $ICON_FILE"
+            mkdir -p assets
+            npm install @capacitor/assets@3 sharp
+            node -e "require('sharp')(process.argv[1]).resize(1024,1024,{fit:'contain',background:{r:255,g:255,b:255,alpha:0}}).png().toFile('assets/icon.png').then(()=>console.log('Icon diperbesar ke 1024x1024'))" "$ICON_FILE"
+            npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#ffffff'
+          else
+            echo "Icon tidak ditemukan, memakai icon bawaan"
+          fi
+
+      - name: Pakai kunci tanda tangan tetap (jika ada debug.keystore)
+        run: |
+          if [ -f debug.keystore ]; then
+            mkdir -p ~/.android
+            cp debug.keystore ~/.android/debug.keystore
+            echo "Memakai debug.keystore dari repo (APK bisa menimpa versi lama)"
+          else
+            echo "debug.keystore tidak ada; hapus aplikasi lama sebelum instal versi baru"
+          fi
+
+      - name: Bangun APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk "app/build/outputs/apk/debug/${SLUG}.apk"
+
+      - name: Simpan APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.SLUG }}-apk
+          path: android/app/build/outputs/apk/debug/${{ env.SLUG }}.apk
+
+      - name: Buat Release (APK bisa diunduh dari halaman Releases)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete "v1.${{ github.run_number }}" --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" || true
+          gh release create "v1.${{ github.run_number }}" "android/app/build/outputs/apk/debug/${SLUG}.apk" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "${APP_NAME} v1.${{ github.run_number }}" \
+            --notes "APK ${APP_NAME} hasil build otomatis nomor ${{ github.run_number }}."

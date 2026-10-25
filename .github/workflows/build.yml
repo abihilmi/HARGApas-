@@ -106,6 +106,15 @@ jobs:
           fi
           sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
 
+      - name: Tambahkan fitur simpan PDF ke folder Download (jika HTML memakai AndroidSaver)
+        run: |
+          grep -q 'AndroidSaver' www/index.html || { echo "HTML tidak memakai AndroidSaver, langkah ini dilewati."; exit 0; }
+          PKG_DIR="android/app/src/main/java/$(echo "$PKG" | tr . /)"
+          echo 'cGFja2FnZSBfX1BLR19fOwoKaW1wb3J0IGFuZHJvaWQub3MuQnVuZGxlOwppbXBvcnQgY29tLmdldGNhcGFjaXRvci5CcmlkZ2VBY3Rpdml0eTsKCnB1YmxpYyBjbGFzcyBNYWluQWN0aXZpdHkgZXh0ZW5kcyBCcmlkZ2VBY3Rpdml0eSB7CiAgICBAT3ZlcnJpZGUKICAgIHB1YmxpYyB2b2lkIG9uQ3JlYXRlKEJ1bmRsZSBzYXZlZEluc3RhbmNlU3RhdGUpIHsKICAgICAgICBzdXBlci5vbkNyZWF0ZShzYXZlZEluc3RhbmNlU3RhdGUpOwogICAgICAgIGdldEJyaWRnZSgpLmdldFdlYlZpZXcoKS5hZGRKYXZhc2NyaXB0SW50ZXJmYWNlKG5ldyBGaWxlU2F2ZXIodGhpcyksICJBbmRyb2lkU2F2ZXIiKTsKICAgIH0KfQo=' | base64 -d > "$PKG_DIR/MainActivity.java"
+          echo 'cGFja2FnZSBfX1BLR19fOwoKaW1wb3J0IGFuZHJvaWQuTWFuaWZlc3Q7CmltcG9ydCBhbmRyb2lkLmFwcC5BY3Rpdml0eTsKaW1wb3J0IGFuZHJvaWQuY29udGVudC5Db250ZW50VmFsdWVzOwppbXBvcnQgYW5kcm9pZC5jb250ZW50LnBtLlBhY2thZ2VNYW5hZ2VyOwppbXBvcnQgYW5kcm9pZC5kYXRhYmFzZS5DdXJzb3I7CmltcG9ydCBhbmRyb2lkLm1lZGlhLk1lZGlhU2Nhbm5lckNvbm5lY3Rpb247CmltcG9ydCBhbmRyb2lkLm5ldC5Vcmk7CmltcG9ydCBhbmRyb2lkLm9zLkJ1aWxkOwppbXBvcnQgYW5kcm9pZC5vcy5FbnZpcm9ubWVudDsKaW1wb3J0IGFuZHJvaWQucHJvdmlkZXIuTWVkaWFTdG9yZTsKaW1wb3J0IGFuZHJvaWQudXRpbC5CYXNlNjQ7CmltcG9ydCBhbmRyb2lkLndlYmtpdC5KYXZhc2NyaXB0SW50ZXJmYWNlOwppbXBvcnQgYW5kcm9pZHguY29yZS5hcHAuQWN0aXZpdHlDb21wYXQ7CmltcG9ydCBhbmRyb2lkeC5jb3JlLmNvbnRlbnQuQ29udGV4dENvbXBhdDsKaW1wb3J0IGphdmEuaW8uRmlsZTsKaW1wb3J0IGphdmEuaW8uRmlsZU91dHB1dFN0cmVhbTsKaW1wb3J0IGphdmEuaW8uT3V0cHV0U3RyZWFtOwoKcHVibGljIGNsYXNzIEZpbGVTYXZlciB7CiAgICBwcml2YXRlIGZpbmFsIEFjdGl2aXR5IGFjdGl2aXR5OwoKICAgIHB1YmxpYyBGaWxlU2F2ZXIoQWN0aXZpdHkgYWN0aXZpdHkpIHsKICAgICAgICB0aGlzLmFjdGl2aXR5ID0gYWN0aXZpdHk7CiAgICB9CgogICAgQEphdmFzY3JpcHRJbnRlcmZhY2UKICAgIHB1YmxpYyBTdHJpbmcgc2F2ZVBkZihTdHJpbmcgZmlsZU5hbWUsIFN0cmluZyBiYXNlNjQpIHsKICAgICAgICB0cnkgewogICAgICAgICAgICBieXRlW10gZGF0YSA9IEJhc2U2NC5kZWNvZGUoYmFzZTY0LCBCYXNlNjQuREVGQVVMVCk7CiAgICAgICAgICAgIFN0cmluZyBzYWZlID0gZmlsZU5hbWUucmVwbGFjZUFsbCgiW15BLVphLXowLTkuXyAtXSIsICJfIik7CiAgICAgICAgICAgIGlmICghc2FmZS50b0xvd2VyQ2FzZSgpLmVuZHNXaXRoKCIucGRmIikpIHNhZmUgPSBzYWZlICsgIi5wZGYiOwoKICAgICAgICAgICAgaWYgKEJ1aWxkLlZFUlNJT04uU0RLX0lOVCA+PSAyOSkgewogICAgICAgICAgICAgICAgQ29udGVudFZhbHVlcyB2ID0gbmV3IENvbnRlbnRWYWx1ZXMoKTsKICAgICAgICAgICAgICAgIHYucHV0KE1lZGlhU3RvcmUuTWVkaWFDb2x1bW5zLkRJU1BMQVlfTkFNRSwgc2FmZSk7CiAgICAgICAgICAgICAgICB2LnB1dChNZWRpYVN0b3JlLk1lZGlhQ29sdW1ucy5NSU1FX1RZUEUsICJhcHBsaWNhdGlvbi9wZGYiKTsKICAgICAgICAgICAgICAgIHYucHV0KE1lZGlhU3RvcmUuTWVkaWFDb2x1bW5zLlJFTEFUSVZFX1BBVEgsIEVudmlyb25tZW50LkRJUkVDVE9SWV9ET1dOTE9BRFMpOwogICAgICAgICAgICAgICAgVXJpIHVyaSA9IGFjdGl2aXR5LmdldENvbnRlbnRSZXNvbHZlcigpLmluc2VydChNZWRpYVN0b3JlLkRvd25sb2Fkcy5FWFRFUk5BTF9DT05URU5UX1VSSSwgdik7CiAgICAgICAgICAgICAgICBpZiAodXJpID09IG51bGwpIHJldHVybiAiRVJSOnRpZGFrIGJpc2EgbWVtYnVhdCBmaWxlIjsKICAgICAgICAgICAgICAgIE91dHB1dFN0cmVhbSBvcyA9IGFjdGl2aXR5LmdldENvbnRlbnRSZXNvbHZlcigpLm9wZW5PdXRwdXRTdHJlYW0odXJpKTsKICAgICAgICAgICAgICAgIGlmIChvcyA9PSBudWxsKSByZXR1cm4gIkVSUjp0aWRhayBiaXNhIG1lbnVsaXMgZmlsZSI7CiAgICAgICAgICAgICAgICB0cnkgewogICAgICAgICAgICAgICAgICAgIG9zLndyaXRlKGRhdGEpOwogICAgICAgICAgICAgICAgICAgIG9zLmZsdXNoKCk7CiAgICAgICAgICAgICAgICB9IGZpbmFsbHkgewogICAgICAgICAgICAgICAgICAgIG9zLmNsb3NlKCk7CiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBTdHJpbmcgc2hvd24gPSBzYWZlOwogICAgICAgICAgICAgICAgQ3Vyc29yIGMgPSBhY3Rpdml0eS5nZXRDb250ZW50UmVzb2x2ZXIoKS5xdWVyeSh1cmksIG5ldyBTdHJpbmdbXXtNZWRpYVN0b3JlLk1lZGlhQ29sdW1ucy5ESVNQTEFZX05BTUV9LCBudWxsLCBudWxsLCBudWxsKTsKICAgICAgICAgICAgICAgIGlmIChjICE9IG51bGwpIHsKICAgICAgICAgICAgICAgICAgICB0cnkgewogICAgICAgICAgICAgICAgICAgICAgICBpZiAoYy5tb3ZlVG9GaXJzdCgpKSBzaG93biA9IGMuZ2V0U3RyaW5nKDApOwogICAgICAgICAgICAgICAgICAgIH0gZmluYWxseSB7CiAgICAgICAgICAgICAgICAgICAgICAgIGMuY2xvc2UoKTsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICByZXR1cm4gIk9LOiIgKyBzaG93bjsKICAgICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgIGlmIChDb250ZXh0Q29tcGF0LmNoZWNrU2VsZlBlcm1pc3Npb24oYWN0aXZpdHksIE1hbmlmZXN0LnBlcm1pc3Npb24uV1JJVEVfRVhURVJOQUxfU1RPUkFHRSkgIT0gUGFja2FnZU1hbmFnZXIuUEVSTUlTU0lPTl9HUkFOVEVEKSB7CiAgICAgICAgICAgICAgICAgICAgQWN0aXZpdHlDb21wYXQucmVxdWVzdFBlcm1pc3Npb25zKGFjdGl2aXR5LCBuZXcgU3RyaW5nW117TWFuaWZlc3QucGVybWlzc2lvbi5XUklURV9FWFRFUk5BTF9TVE9SQUdFfSwgNDcxMSk7CiAgICAgICAgICAgICAgICAgICAgcmV0dXJuICJQRVJNSVNTSU9OIjsKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIEZpbGUgZGlyID0gRW52aXJvbm1lbnQuZ2V0RXh0ZXJuYWxTdG9yYWdlUHVibGljRGlyZWN0b3J5KEVudmlyb25tZW50LkRJUkVDVE9SWV9ET1dOTE9BRFMpOwogICAgICAgICAgICAgICAgaWYgKCFkaXIuZXhpc3RzKCkpIGRpci5ta2RpcnMoKTsKICAgICAgICAgICAgICAgIEZpbGUgZiA9IG5ldyBGaWxlKGRpciwgc2FmZSk7CiAgICAgICAgICAgICAgICBpbnQgbiA9IDE7CiAgICAgICAgICAgICAgICBTdHJpbmcgYmFzZSA9IHNhZmUuc3Vic3RyaW5nKDAsIHNhZmUubGVuZ3RoKCkgLSA0KTsKICAgICAgICAgICAgICAgIHdoaWxlIChmLmV4aXN0cygpKSB7CiAgICAgICAgICAgICAgICAgICAgZiA9IG5ldyBGaWxlKGRpciwgYmFzZSArICIgKCIgKyBuICsgIikucGRmIik7CiAgICAgICAgICAgICAgICAgICAgbisrOwogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgRmlsZU91dHB1dFN0cmVhbSBmb3MgPSBuZXcgRmlsZU91dHB1dFN0cmVhbShmKTsKICAgICAgICAgICAgICAgIHRyeSB7CiAgICAgICAgICAgICAgICAgICAgZm9zLndyaXRlKGRhdGEpOwogICAgICAgICAgICAgICAgICAgIGZvcy5mbHVzaCgpOwogICAgICAgICAgICAgICAgfSBmaW5hbGx5IHsKICAgICAgICAgICAgICAgICAgICBmb3MuY2xvc2UoKTsKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIE1lZGlhU2Nhbm5lckNvbm5lY3Rpb24uc2NhbkZpbGUoYWN0aXZpdHksIG5ldyBTdHJpbmdbXXtmLmdldEFic29sdXRlUGF0aCgpfSwgbmV3IFN0cmluZ1tdeyJhcHBsaWNhdGlvbi9wZGYifSwgbnVsbCk7CiAgICAgICAgICAgICAgICByZXR1cm4gIk9LOiIgKyBmLmdldE5hbWUoKTsKICAgICAgICAgICAgfQogICAgICAgIH0gY2F0Y2ggKEV4Y2VwdGlvbiBlKSB7CiAgICAgICAgICAgIHJldHVybiAiRVJSOiIgKyBlLmdldE1lc3NhZ2UoKTsKICAgICAgICB9CiAgICB9Cn0K' | base64 -d > "$PKG_DIR/FileSaver.java"
+          sed -i "s/__PKG__/$PKG/" "$PKG_DIR/MainActivity.java" "$PKG_DIR/FileSaver.java"
+          sed -i 's#<application#<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />\n    <application#' android/app/src/main/AndroidManifest.xml
+
       - name: Agar aplikasi jalan tanpa internet (Tailwind, FontAwesome, Google Fonts)
         continue-on-error: true
         run: |
@@ -169,17 +178,12 @@ jobs:
           path: android/app/build/outputs/apk/debug/${{ env.SLUG }}.apk
 
       - name: Buat Release (APK bisa diunduh dari halaman Releases)
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v1.${{ github.run_number }}"
-          APK="android/app/build/outputs/apk/debug/${SLUG}.apk"
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Release $TAG sudah ada, APK ditimpa."
-            gh release upload "$TAG" "$APK" --clobber --repo "$GITHUB_REPOSITORY"
-          else
-            gh release create "$TAG" "$APK" \
-              --repo "$GITHUB_REPOSITORY" \
-              --title "${APP_NAME} $TAG" \
-              --notes "APK ${APP_NAME} hasil build otomatis nomor ${{ github.run_number }}."
-          fi
+          gh release delete "v1.${{ github.run_number }}" --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" || true
+          gh release create "v1.${{ github.run_number }}" "android/app/build/outputs/apk/debug/${SLUG}.apk" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "${APP_NAME} v1.${{ github.run_number }}" \
+            --notes "APK ${APP_NAME} hasil build otomatis nomor ${{ github.run_number }}."

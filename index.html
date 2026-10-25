@@ -714,14 +714,78 @@
             window.location.href = `https://api.whatsapp.com/send?phone=${nomorAdmin}&text=${teksPesan}`;
         }
 
-        // Di aplikasi Android (WebView) perintah cetak tidak tersedia
-        function cetakHalaman() {
-            const cap = window.Capacitor;
-            if (cap && cap.isNativePlatform && cap.isNativePlatform()) {
-                alert("Cetak PDF belum tersedia di aplikasi Android. Gunakan tangkapan layar (screenshot) untuk menyimpan hasil hitungan.");
-                return;
+        // Ekspor laporan HARGAPAS ke PDF. html2pdf dipakai agar tidak hanya mengandalkan window.print().
+        let pdfLibraryPromise = null;
+        function muatPustakaPDF() {
+            if (window.html2pdf) return Promise.resolve(true);
+            if (pdfLibraryPromise) return pdfLibraryPromise;
+            pdfLibraryPromise = new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+                script.onload = () => resolve(!!window.html2pdf);
+                script.onerror = () => resolve(false);
+                document.head.appendChild(script);
+            });
+            return pdfLibraryPromise;
+        }
+
+        async function cetakHalaman() {
+            const tombol = document.querySelector('button[onclick="cetakHalaman()"]');
+            const teksAsli = tombol ? tombol.innerHTML : '';
+            if (tombol) { tombol.disabled = true; tombol.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan PDF...'; }
+            try {
+                const siap = await muatPustakaPDF();
+                if (!siap || !window.html2pdf) {
+                    // Fallback untuk browser yang menyediakan dialog cetak.
+                    alert('Pustaka PDF tidak dapat dimuat. Periksa koneksi internet, lalu coba lagi. Jika APK digunakan tanpa internet, fitur PDF perlu disertakan langsung di paket APK.');
+                    return;
+                }
+
+                const sumber = document.getElementById('appRoot');
+                if (!sumber || getComputedStyle(sumber).display === 'none') {
+                    alert('Buka aplikasi dan tampilkan hasil perhitungan terlebih dahulu.');
+                    return;
+                }
+                const salinan = sumber.cloneNode(true);
+                salinan.style.display = 'block';
+                salinan.style.width = '100%';
+                salinan.style.background = '#ffffff';
+                salinan.style.color = '#0f172a';
+                salinan.querySelectorAll('.no-print, #exit-modal, button').forEach(el => el.remove());
+                salinan.querySelectorAll('input, select, textarea').forEach(el => {
+                    const nilai = (el.value || '').trim();
+                    const pengganti = document.createElement('span');
+                    pengganti.textContent = nilai || '-';
+                    pengganti.style.cssText = 'display:inline-block;min-height:1.4em;padding:2px 4px;color:#0f172a;font-weight:600;white-space:pre-wrap;';
+                    el.replaceWith(pengganti);
+                });
+                salinan.querySelectorAll('*').forEach(el => {
+                    el.style.animation = 'none';
+                    el.style.transition = 'none';
+                });
+                const wadah = document.createElement('div');
+                wadah.style.cssText = 'position:fixed;left:-100000px;top:0;width:800px;background:#fff;z-index:-1;';
+                wadah.appendChild(salinan);
+                document.body.appendChild(wadah);
+                const opsi = {
+                    margin: [8, 8, 10, 8],
+                    filename: 'HARGAPAS-Laporan-HPP.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: 0 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.rounded-xl'] }
+                };
+                try {
+                    await window.html2pdf().set(opsi).from(salinan).save();
+                } finally {
+                    wadah.remove();
+                }
+            } catch (err) {
+                console.error('Ekspor PDF HARGAPAS gagal:', err);
+                alert('PDF belum berhasil dibuat. Jika Anda memakai APK Android, pembungkus APK mungkin perlu mengaktifkan unduhan file. Coba lagi saat koneksi internet aktif.');
+            } finally {
+                if (tombol) { tombol.disabled = false; tombol.innerHTML = teksAsli; }
             }
-            window.print();
         }
 
         function openExitModal() { document.getElementById('exit-modal').style.display = 'flex'; }

@@ -202,6 +202,138 @@
           #appRoot main .bg-white.p-6,
           #appRoot main .bg-white.p-5 { padding:17px !important; border-radius:18px !important; }
         }
+    
+        /* ===== RESPONSIVE + KOMPATIBILITAS ANDROID LAMA ===== */
+        html { width:100%; max-width:100%; overflow-x:hidden; }
+        body { width:100%; max-width:100%; min-width:0; overflow-x:hidden; }
+        #appRoot, #appRoot main, #appRoot main > div { min-width:0; max-width:100%; box-sizing:border-box; }
+        #appRoot img, #appRoot svg { max-width:100%; }
+        #appRoot input, #appRoot select, #appRoot textarea, #appRoot button { max-width:100%; }
+        #appRoot table { max-width:100%; }
+        #appRoot .overflow-x-auto { max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+        #appRoot main .sticky { position:static !important; }
+        #loginRoot { width:100%; max-width:100%; min-width:0; }
+        #loginRoot .container-box { max-width:100%; }
+
+        /* Fallback untuk WebView/browser lama yang belum mendukung CSS Grid */
+        @supports not (display:grid) {
+            #appRoot main > .grid { display:block !important; }
+            #appRoot main > .grid > div { display:block; width:100% !important; max-width:100% !important; }
+            #appRoot main > .grid > div + div { margin-top:20px; }
+            #appRoot .grid.grid-cols-1 { display:block !important; }
+            #appRoot .grid.grid-cols-1 > div { width:100% !important; max-width:100% !important; }
+            #appRoot .flex.items-center.justify-between { flex-wrap:wrap; }
+        }
+
+        /* HP kecil / Android dengan viewport sempit */
+        @media screen and (max-width: 600px) {
+            #loginRoot { min-height:100vh; min-height:100dvh; padding:12px 10px; align-items:flex-start; }
+            #loginRoot .container-box { padding:22px 17px; border-radius:18px; }
+            #loginRoot .logo-area { margin-bottom:22px; }
+            #loginRoot .logo-area h1 { font-size:30px; letter-spacing:2px; }
+            #appRoot > header > div { padding:16px 12px !important; }
+            #appRoot header h1 { font-size:clamp(1.45rem, 7vw, 2rem) !important; line-height:1.2 !important; overflow-wrap:anywhere; }
+            #appRoot header p, #appRoot header span { overflow-wrap:anywhere; }
+            #appRoot header .flex.items-center.gap-3 { display:flex !important; flex-wrap:wrap !important; gap:8px !important; }
+            #appRoot header .flex.items-center.gap-3 > * { flex:1 1 135px; min-width:0; }
+            #appRoot header button { white-space:normal; min-height:42px; }
+            #appRoot main { width:100%; padding:14px 9px 24px !important; }
+            #appRoot main > div.mb-8 { padding:12px !important; margin-bottom:16px !important; }
+            #appRoot main .bg-white.rounded-2xl,
+            #appRoot main .bg-white.p-6,
+            #appRoot main .bg-white.p-5,
+            #appRoot main .bg-white.p-4 { padding:13px !important; border-radius:15px !important; }
+            #appRoot main h2 { font-size:14px !important; overflow-wrap:anywhere; }
+            #appRoot main p { overflow-wrap:anywhere; }
+            #appRoot main input:not([type=checkbox]):not([type=radio]):not([type=range]),
+            #appRoot main select,
+            #appRoot main textarea { min-width:0; font-size:16px !important; }
+            #appRoot main button { white-space:normal; overflow-wrap:anywhere; }
+            #appRoot main .overflow-x-auto table { min-width:560px; }
+            #appRoot main .flex.items-center.justify-between { gap:10px; }
+            #appRoot main .flex.items-center.justify-between > button { flex-shrink:0; }
+            #appRoot footer { padding-left:12px; padding-right:12px; overflow-wrap:anywhere; }
+        }
+
+        /* HP sangat kecil, misalnya layar 320px */
+        @media screen and (max-width: 360px) {
+            #loginRoot .container-box { padding:18px 13px; }
+            #appRoot > header > div { padding:13px 9px !important; }
+            #appRoot main { padding-left:6px !important; padding-right:6px !important; }
+            #appRoot main .bg-white.rounded-2xl,
+            #appRoot main .bg-white.p-6,
+            #appRoot main .bg-white.p-5,
+            #appRoot main .bg-white.p-4 { padding:10px !important; }
+            #appRoot header .flex.items-center.gap-3 > * { flex-basis:100%; }
+        }
+
+
+        /* ===== PERBAIKAN LAYOUT HP: konten tidak menjadi kolom sempit ===== */
+        #appRoot { width:100%; }
+        #appRoot > header,
+        #appRoot > main,
+        #appRoot > footer { width:100%; min-width:0; box-sizing:border-box; }
+        #appRoot main .grid { min-width:0; }
+        #appRoot main .grid > * { min-width:0; }
+
+        /* Tiga tombol utama tetap satu baris pada mode portrait HP modern */
+        @media screen and (max-width: 640px) {
+            #appRoot header .flex.items-center.gap-3 {
+                display:flex !important;
+                flex-direction:row !important;
+                flex-wrap:nowrap !important;
+                gap:6px !important;
+                width:100% !important;
+            }
+            #appRoot header .flex.items-center.gap-3 > button {
+                flex:1 1 0 !important;
+                width:0 !important;
+                min-width:0 !important;
+                padding:10px 4px !important;
+                font-size:clamp(10px, 2.8vw, 12px) !important;
+                line-height:1.25 !important;
+                text-align:center !important;
+                justify-content:center !important;
+                overflow-wrap:anywhere !important;
+                white-space:normal !important;
+            }
+            #appRoot header .flex.items-center.gap-3 > button i {
+                display:none;
+            }
+        }
+
+        /* Paksa susunan satu kolom pada layar fisik sempit, termasuk browser lama */
+        @media screen and (max-width: 600px) {
+            #appRoot main > .grid,
+            #appRoot main .grid.grid-cols-1,
+            #appRoot main .grid.grid-cols-1.sm\\:grid-cols-2,
+            #appRoot main .grid.grid-cols-1.lg\\:grid-cols-3 {
+                display:block !important;
+                width:100% !important;
+            }
+            #appRoot main > .grid > *,
+            #appRoot main .grid.grid-cols-1 > *,
+            #appRoot main .grid.grid-cols-1.sm\\:grid-cols-2 > *,
+            #appRoot main .grid.grid-cols-1.lg\\:grid-cols-3 > * {
+                width:100% !important;
+                max-width:100% !important;
+                box-sizing:border-box !important;
+                margin-left:0 !important;
+                margin-right:0 !important;
+            }
+            #appRoot main > .grid > * + *,
+            #appRoot main .grid.grid-cols-1 > * + * {
+                margin-top:14px !important;
+            }
+        }
+
+        @media screen and (max-width: 360px) {
+            #appRoot header .flex.items-center.gap-3 > button {
+                padding:9px 2px !important;
+                font-size:10px !important;
+            }
+        }
+
 </style>
 </head>
 <body class="bg-blue-50/40 text-slate-800 font-sans antialiased">
@@ -296,7 +428,7 @@
                 </div>
                 <div class="flex items-center gap-3 no-print">
                     <button onclick="cetakHalaman()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition shadow-md flex items-center gap-2 border border-blue-400">
-                        <i class="fa-solid fa-file-pdf"></i> PDF: Simpan / Bagikan
+                        <i class="fa-solid fa-print"></i> Cetak / Ekspor PDF
                     </button>
                     <button onclick="resetAllData()" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition border border-white/20">
                         <i class="fa-solid fa-rotate-right"></i> Reset Form
@@ -602,20 +734,6 @@
 </div>
 
 <!-- Dialog konfirmasi Keluar dari HARGAPAS -->
-<div id="pdf-choice-modal" class="no-print fixed inset-0 z-[60] items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4" style="display:none" role="dialog" aria-modal="true" aria-labelledby="pdf-choice-title">
-  <div class="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl border border-slate-200">
-    <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 text-2xl"><i class="fa-solid fa-file-pdf"></i></div>
-    <h2 id="pdf-choice-title" class="text-center text-xl font-extrabold text-slate-900">Laporan HARGAPAS</h2>
-    <p class="mt-2 text-center text-sm text-slate-600">Pilih tindakan untuk file PDF hasil perhitungan Anda.</p>
-    <div class="mt-5 grid gap-3">
-      <button id="pdf-save-btn" onclick="prosesPDF('save')" class="flex items-center justify-center gap-3 rounded-xl bg-blue-700 px-4 py-3 font-bold text-white shadow hover:bg-blue-800"><i class="fa-solid fa-download"></i> Simpan PDF ke HP</button>
-      <button id="pdf-share-btn" onclick="prosesPDF('share')" class="flex items-center justify-center gap-3 rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white shadow hover:bg-emerald-700"><i class="fa-solid fa-share-nodes"></i> Bagikan PDF</button>
-      <button onclick="tutupPilihanPDF()" class="rounded-xl border border-slate-300 px-4 py-3 font-semibold text-slate-700 hover:bg-slate-50">Batal</button>
-    </div>
-    <p class="mt-4 text-center text-xs leading-relaxed text-slate-500">Jika pilihan Simpan lokasi tidak tersedia, file biasanya masuk ke folder Download. Jika Bagikan tidak didukung APK, simpan PDF lalu bagikan dari aplikasi File Saya.</p>
-  </div>
-</div>
-
 <div id="exit-modal" class="no-print fixed inset-0 z-50 items-center justify-center bg-black/50 p-4" style="display:none">
     <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border-t-4 border-yellow-300">
         <div class="text-4xl mb-3">🚪</div>
@@ -657,36 +775,61 @@
             window.scrollTo(0, 0);
         }
 
+        // Mode login: pertama kali memakai ID Toko, WA, password, dan lisensi.
+        // Setelah satu kali berhasil, pembukaan berikutnya cukup memakai password.
+        function aturTampilanLogin() {
+            const pernahLogin = localStorage.getItem('hargapas_login_pernah_berhasil') === 'true';
+            const grupUser = document.getElementById('loginUser').closest('.form-group');
+            const grupWA = document.getElementById('loginWA').closest('.form-group');
+            const grupLisensi = document.getElementById('groupLisensi');
+            const linkRegistrasi = document.querySelector('#halamanLogin .switch-link');
+            [grupUser, grupWA, grupLisensi].forEach(el => { if (el) el.style.display = pernahLogin ? 'none' : 'block'; });
+            document.getElementById('loginUser').required = !pernahLogin;
+            document.getElementById('loginWA').required = !pernahLogin;
+            document.getElementById('loginLisensi').required = false;
+            if (linkRegistrasi) linkRegistrasi.style.display = pernahLogin ? 'none' : 'block';
+            if (pernahLogin) {
+                document.getElementById('loginUser').value = localStorage.getItem('hargapas_id_toko') || '';
+                document.getElementById('loginWA').value = localStorage.getItem('hargapas_no_wa') || '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', aturTampilanLogin);
+
         function prosesLogin(event) {
             event.preventDefault();
-            const idToko = document.getElementById('loginUser').value.trim();
-            const noWA = document.getElementById('loginWA').value.trim();
+            const pernahLogin = localStorage.getItem('hargapas_login_pernah_berhasil') === 'true';
+            const idToko = pernahLogin ? (localStorage.getItem('hargapas_id_toko') || '') : document.getElementById('loginUser').value.trim();
+            const noWA = pernahLogin ? (localStorage.getItem('hargapas_no_wa') || '') : document.getElementById('loginWA').value.trim();
             const passwordInput = document.getElementById('loginPass').value;
             const lisensiInput = document.getElementById('loginLisensi').value.trim();
 
-            const passwordFix = "Harga123#";
+            const passwordFix = '123#';
             const cleanWA = noWA.replace(/[^0-9]/g, '');
             const empatAngkaWA = cleanWA.slice(-4);
             const formulaLisensiValid = `Harga_${idToko}_0231_${empatAngkaWA}`;
-            const cekLisensiLokal = localStorage.getItem("hargapas_lisensi_terkunci") === "true";
+            const cekLisensiLokal = localStorage.getItem('hargapas_lisensi_terkunci') === 'true';
 
             let loginSukses = false;
             if (passwordInput === passwordFix) {
-                if (cekLisensiLokal) {
+                if (pernahLogin || cekLisensiLokal) {
                     loginSukses = true;
                 } else if (lisensiInput === formulaLisensiValid) {
-                    localStorage.setItem("hargapas_lisensi_terkunci", "true");
+                    localStorage.setItem('hargapas_lisensi_terkunci', 'true');
                     loginSukses = true;
                 }
             }
 
             if (loginSukses) {
+                localStorage.setItem('hargapas_login_pernah_berhasil', 'true');
+                localStorage.setItem('hargapas_id_toko', idToko);
+                localStorage.setItem('hargapas_no_wa', noWA);
                 jumlahPercobaanGagal = 0;
+                aturTampilanLogin();
                 tampilkanAplikasi();
             } else {
                 jumlahPercobaanGagal++;
                 if (jumlahPercobaanGagal >= 3) {
-                    // Setelah 3 kali gagal, arahkan ke formulir registrasi untuk meminta akses resmi.
                     document.getElementById('regUser').value = idToko;
                     document.getElementById('regWA').value = noWA;
                     document.getElementById('regAfterFailuresNotice').style.display = 'block';
@@ -694,7 +837,7 @@
                     pindahHalaman('halamanRegistrasi');
                     window.scrollTo(0, 0);
                 } else {
-                    alert(`Data akses belum cocok (percobaan ${jumlahPercobaanGagal}/3). Periksa kembali ID Toko, nomor WA, password, dan lisensi Anda.`);
+                    alert(`Password atau data akses belum cocok (percobaan ${jumlahPercobaanGagal}/3). Periksa kembali lalu coba lagi.`);
                 }
             }
         }
@@ -728,9 +871,8 @@
             window.location.href = `https://api.whatsapp.com/send?phone=${nomorAdmin}&text=${teksPesan}`;
         }
 
-        // Buat PDF sebagai Blob agar dapat disimpan atau dibagikan dari Android/browser.
+        // Ekspor laporan HARGAPAS ke PDF. html2pdf dipakai agar tidak hanya mengandalkan window.print().
         let pdfLibraryPromise = null;
-        let pdfBusy = false;
         function muatPustakaPDF() {
             if (window.html2pdf) return Promise.resolve(true);
             if (pdfLibraryPromise) return pdfLibraryPromise;
@@ -744,52 +886,44 @@
             return pdfLibraryPromise;
         }
 
-        function cetakHalaman() {
-            const sumber = document.getElementById('appRoot');
-            if (!sumber || getComputedStyle(sumber).display === 'none') {
-                alert('Buka aplikasi dan tampilkan hasil perhitungan terlebih dahulu.');
-                return;
-            }
-            document.getElementById('pdf-choice-modal').style.display = 'flex';
-        }
-
-        function tutupPilihanPDF() {
-            if (pdfBusy) return;
-            const modal = document.getElementById('pdf-choice-modal');
-            if (modal) modal.style.display = 'none';
-        }
-
-        async function buatPDFBlob() {
-            const siap = await muatPustakaPDF();
-            if (!siap || !window.html2pdf) {
-                throw new Error('Pustaka PDF tidak dapat dimuat. Periksa koneksi internet, lalu coba lagi.');
-            }
-            const sumber = document.getElementById('appRoot');
-            if (!sumber || getComputedStyle(sumber).display === 'none') {
-                throw new Error('Buka aplikasi dan tampilkan hasil perhitungan terlebih dahulu.');
-            }
-            const salinan = sumber.cloneNode(true);
-            salinan.style.display = 'block';
-            salinan.style.width = '100%';
-            salinan.style.background = '#ffffff';
-            salinan.style.color = '#0f172a';
-            salinan.querySelectorAll('.no-print, #exit-modal, #pdf-choice-modal, button').forEach(el => el.remove());
-            salinan.querySelectorAll('input, select, textarea').forEach(el => {
-                const nilai = (el.value || '').trim();
-                const pengganti = document.createElement('span');
-                pengganti.textContent = nilai || '-';
-                pengganti.style.cssText = 'display:inline-block;min-height:1.4em;padding:2px 4px;color:#0f172a;font-weight:600;white-space:pre-wrap;';
-                el.replaceWith(pengganti);
-            });
-            salinan.querySelectorAll('*').forEach(el => {
-                el.style.animation = 'none';
-                el.style.transition = 'none';
-            });
-            const wadah = document.createElement('div');
-            wadah.style.cssText = 'position:fixed;left:-100000px;top:0;width:800px;background:#fff;z-index:-1;';
-            wadah.appendChild(salinan);
-            document.body.appendChild(wadah);
+        async function cetakHalaman() {
+            const tombol = document.querySelector('button[onclick="cetakHalaman()"]');
+            const teksAsli = tombol ? tombol.innerHTML : '';
+            if (tombol) { tombol.disabled = true; tombol.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan PDF...'; }
             try {
+                const siap = await muatPustakaPDF();
+                if (!siap || !window.html2pdf) {
+                    // Fallback untuk browser yang menyediakan dialog cetak.
+                    alert('Pustaka PDF tidak dapat dimuat. Periksa koneksi internet, lalu coba lagi. Jika APK digunakan tanpa internet, fitur PDF perlu disertakan langsung di paket APK.');
+                    return;
+                }
+
+                const sumber = document.getElementById('appRoot');
+                if (!sumber || getComputedStyle(sumber).display === 'none') {
+                    alert('Buka aplikasi dan tampilkan hasil perhitungan terlebih dahulu.');
+                    return;
+                }
+                const salinan = sumber.cloneNode(true);
+                salinan.style.display = 'block';
+                salinan.style.width = '100%';
+                salinan.style.background = '#ffffff';
+                salinan.style.color = '#0f172a';
+                salinan.querySelectorAll('.no-print, #exit-modal, button').forEach(el => el.remove());
+                salinan.querySelectorAll('input, select, textarea').forEach(el => {
+                    const nilai = (el.value || '').trim();
+                    const pengganti = document.createElement('span');
+                    pengganti.textContent = nilai || '-';
+                    pengganti.style.cssText = 'display:inline-block;min-height:1.4em;padding:2px 4px;color:#0f172a;font-weight:600;white-space:pre-wrap;';
+                    el.replaceWith(pengganti);
+                });
+                salinan.querySelectorAll('*').forEach(el => {
+                    el.style.animation = 'none';
+                    el.style.transition = 'none';
+                });
+                const wadah = document.createElement('div');
+                wadah.style.cssText = 'position:fixed;left:-100000px;top:0;width:800px;background:#fff;z-index:-1;';
+                wadah.appendChild(salinan);
+                document.body.appendChild(wadah);
                 const opsi = {
                     margin: [8, 8, 10, 8],
                     filename: 'HARGAPAS-Laporan-HPP.pdf',
@@ -798,82 +932,17 @@
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                     pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.rounded-xl'] }
                 };
-                return await window.html2pdf().set(opsi).from(salinan).outputPdf('blob');
-            } finally {
-                wadah.remove();
-            }
-        }
-
-        async function prosesPDF(aksi) {
-            if (pdfBusy) return;
-            pdfBusy = true;
-            const tombolSimpan = document.getElementById('pdf-save-btn');
-            const tombolBagikan = document.getElementById('pdf-share-btn');
-            const teksSimpan = tombolSimpan.innerHTML;
-            const teksBagikan = tombolBagikan.innerHTML;
-            tombolSimpan.disabled = tombolBagikan.disabled = true;
-            const tombolAktif = aksi === 'save' ? tombolSimpan : tombolBagikan;
-            tombolAktif.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan PDF...';
-            try {
-                const blob = await buatPDFBlob();
-                const namaFile = 'HARGAPAS-Laporan-HPP.pdf';
-                const file = new File([blob], namaFile, { type: 'application/pdf' });
-
-                if (aksi === 'share') {
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({ files: [file], title: 'Laporan HARGAPAS', text: 'Laporan hasil perhitungan HPP dan harga jual.' });
-                        tutupPilihanPDF();
-                        return;
-                    }
-                    // Jika menu berbagi file tidak didukung WebView, unduh PDF agar pengguna dapat membagikannya dari File Saya.
-                    unduhBlob(blob, namaFile);
-                    alert('Fitur Bagikan langsung tidak didukung oleh APK ini. PDF sudah disiapkan untuk diunduh; buka File Saya > Download, lalu pilih Bagikan.');
-                    tutupPilihanPDF();
-                    return;
+                try {
+                    await window.html2pdf().set(opsi).from(salinan).save();
+                } finally {
+                    wadah.remove();
                 }
-
-                // Gunakan pemilih lokasi jika browser mendukung; jika tidak, gunakan unduhan standar Android.
-                if (window.showSaveFilePicker) {
-                    try {
-                        const handle = await window.showSaveFilePicker({
-                            suggestedName: namaFile,
-                            types: [{ description: 'Dokumen PDF', accept: { 'application/pdf': ['.pdf'] } }]
-                        });
-                        const writable = await handle.createWritable();
-                        await writable.write(blob);
-                        await writable.close();
-                        alert('PDF berhasil disimpan. Anda dapat membukanya dari lokasi yang dipilih.');
-                        tutupPilihanPDF();
-                        return;
-                    } catch (err) {
-                        if (err && err.name === 'AbortError') return;
-                        // Lanjut ke unduhan standar bila pemilih lokasi gagal.
-                    }
-                }
-                unduhBlob(blob, namaFile);
-                alert('PDF sudah dibuat. Jika tidak muncul pilihan lokasi, periksa folder Download di HP Anda.');
-                tutupPilihanPDF();
             } catch (err) {
                 console.error('Ekspor PDF HARGAPAS gagal:', err);
-                alert((err && err.message ? err.message : 'PDF belum berhasil dibuat.') + '\nPastikan koneksi internet aktif, lalu coba lagi.');
+                alert('PDF belum berhasil dibuat. Jika Anda memakai APK Android, pembungkus APK mungkin perlu mengaktifkan unduhan file. Coba lagi saat koneksi internet aktif.');
             } finally {
-                pdfBusy = false;
-                tombolSimpan.disabled = tombolBagikan.disabled = false;
-                tombolSimpan.innerHTML = teksSimpan;
-                tombolBagikan.innerHTML = teksBagikan;
+                if (tombol) { tombol.disabled = false; tombol.innerHTML = teksAsli; }
             }
-        }
-
-        function unduhBlob(blob, namaFile) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = namaFile;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 60000);
         }
 
         function openExitModal() { document.getElementById('exit-modal').style.display = 'flex'; }
@@ -911,9 +980,10 @@
                 console.error('Gagal menutup aplikasi HARGAPAS:', err);
             }
 
-            // Browser/HTML tanpa bridge native tidak memiliki izin untuk menutup dirinya sendiri.
-            // Tetap di layar aplikasi agar tidak terlihat seolah tombol keluar hanya logout.
-            showToastKeluar('Tombol keluar belum terhubung ke fungsi native APK. HTML di Chrome tidak dapat menutup Chrome secara paksa.');
+            // Fallback terakhir. Ini hanya berhasil jika halaman dibuka oleh script/host
+            // yang mengizinkan penutupan; browser biasa dapat mengabaikan window.close().
+            try { window.close(); } catch (err) { /* ditangani oleh pesan di bawah */ }
+            showToastKeluar('Aplikasi belum dapat ditutup oleh HTML ini. Agar tombol Ya benar-benar menutup APK, aplikasi Android harus menghubungkan bridge exitApp/ayosoExitApp atau menangani EXIT_APP.');
         }
 
         function showToastKeluar(pesan) {

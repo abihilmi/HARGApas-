@@ -1471,6 +1471,90 @@
             loadPreset('moci');
             renderSavedProducts();
         };
-    </script>
+    /* ============================================================
+   CARA PAKAI (di index.html):
+   1. HAPUS fungsi lama: kirimPemberitahuanGagalKeAdmin() dan kirimAksesHargaPas()
+   2. TEMPEL seluruh isi file ini di tempat fungsi lama tadi
+      (di dalam tag <script> yang sama).
+   ============================================================ */
+
+const NOMOR_ADMIN = "6281316145365";
+
+function tampilkanKirimWA(pesan) {
+    const teks = encodeURIComponent(pesan);
+    // whatsapp:// dikenali WhatsApp biasa maupun WhatsApp Business
+    const urlApp = "whatsapp://send?phone=" + NOMOR_ADMIN + "&text=" + teks;
+    // cadangan: tautan web wa.me
+    const urlWeb = "https://wa.me/" + NOMOR_ADMIN + "?text=" + teks;
+
+    let box = document.getElementById('waFallback');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'waFallback';
+        box.style.cssText = 'margin-top:16px;padding:14px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;font-size:13px;line-height:1.5;';
+        document.querySelector('#halamanRegistrasi form').after(box);
+    }
+    box.innerHTML =
+        '<p style="margin:0 0 10px;font-weight:600;color:#166534">Data siap dikirim. Ketuk tombol di bawah:</p>' +
+        '<a href="' + urlApp + '" ' +
+        'style="display:block;text-align:center;padding:13px;border-radius:12px;background:#059669;color:#fff;font-weight:bold;text-decoration:none">' +
+        'Buka WhatsApp / WA Business</a>' +
+        '<a href="' + urlWeb + '" target="_blank" rel="noopener" ' +
+        'style="display:block;text-align:center;margin-top:8px;padding:11px;border-radius:12px;border:1px solid #059669;color:#047857;font-weight:600;text-decoration:none">' +
+        'Cara lain (tautan wa.me)</a>' +
+        '<button type="button" id="btnSalinPesan" style="margin-top:10px;background:#1d4ed8">Salin Pesan</button>' +
+        '<p style="margin:10px 0 0;color:#475569">Jika WhatsApp tidak terbuka, salin pesan lalu tempel ke chat admin (' +
+        NOMOR_ADMIN + ') lewat WhatsApp atau WA Business.</p>';
+
+    document.getElementById('btnSalinPesan').onclick = function () {
+        const tombol = this;
+        const selesai = function () { tombol.textContent = 'Tersalin ✓'; };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(pesan).then(selesai, function () {
+                alert('Gagal menyalin. Kirim manual ke admin: ' + NOMOR_ADMIN);
+            });
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = pesan;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); selesai(); } catch (e) {}
+            ta.remove();
+        }
+    };
+}
+
+function kirimAksesHargaPas(event) {
+    event.preventDefault();
+    const nama = document.getElementById('regNama').value;
+    const username = document.getElementById('regUser').value;
+    const whatsapp = document.getElementById('regWA').value;
+    const email = document.getElementById('regEmail').value;
+
+    const pesan =
+        "Halo Admin HARGAPAS,\n" +
+        "Saya mengajukan registrasi pendaftaran akses HARGAPAS.\n\n" +
+        "*Data Pendaftar:*\n" +
+        "• *Nama Pemilik:* " + nama + "\n" +
+        "• *Toko/ID Login:* " + username + "\n" +
+        "• *No. WA:* " + whatsapp + "\n" +
+        "• *E-mail:* " + email + "\n\n" +
+        "Mohon diproses untuk pengiriman lisensi. Terima kasih!";
+
+    tampilkanKirimWA(pesan);
+}
+
+function kirimPemberitahuanGagalKeAdmin(toko, wa, alasan) {
+    const pesan =
+        "Halo Admin HARGAPAS,\n" +
+        "Terjadi kendala galat login akun sistem.\n\n" +
+        "*Status:* " + alasan + "\n" +
+        "• *ID Toko:* " + toko + "\n" +
+        "• *No. Input WA:* " + wa + "\n\n" +
+        "Mohon bantuan verifikasi ulang nomor lisensi perangkat.";
+    tampilkanKirimWA(pesan);
+}
+
+</script>
 </body>
 </html>

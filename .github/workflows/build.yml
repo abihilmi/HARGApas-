@@ -164,6 +164,10 @@ jobs:
             echo "debug.keystore tidak ada; hapus aplikasi lama sebelum instal versi baru"
           fi
 
+      - name: Izinkan akses WhatsApp dan WA Business
+        run: |
+          sed -i 's#<application#<queries>\n        <package android:name="com.whatsapp" />\n        <package android:name="com.whatsapp.w4b" />\n        <intent>\n            <action android:name="android.intent.action.VIEW" />\n            <data android:scheme="whatsapp" />\n        </intent>\n    </queries>\n    <application#' android/app/src/main/AndroidManifest.xml
+      
       - name: Bangun APK
         run: |
           cd android
